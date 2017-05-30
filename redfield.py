@@ -1,109 +1,30 @@
-# REDFIELD.py: Time-Dependent Redfield Solver for D Wave Simulations
+"""
+Original Developer: David Roberts
+Purpose of Module: outputs Redfield tensor
+Last Modified: 5/30/17
+Last Modified By: David Roberts
+Last Modification Purpose: fixed function naming
+"""
 
+
+# Standard Modules:
 from qutip import *
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy.linalg as linalg
 
-# Parameters specific to the D Wave 2X onsite.
-ANNEALING_SCHEDULE = pd.read_csv('~/Documents/LANLA/DWaveAnnealingSchedule.csv', sep=',',header=None)
-ANNEALING_PARAMETER = ANNEALING_SCHEDULE[0]
-DRIVER_COEFFICIENT = [(10**9)*x for x in ANNEALING_SCHEDULE[1]]
-PROBLEM_COEFFICIENT = [(10**9)*x for x in ANNEALING_SCHEDULE[2]]
-
-ETA_MRT = 0.24
-
-# Fundamental Constants in SI Units
-KB = 1.38065 *(10**(-23))
-T = 15.5*(10**(-3))
-HBAR = 6.62607*(10**(-34))
-
-#Define Pauli matrices. e.g. X(actingQubit) is the bit flip operator on actingQubit.
-
-def X(acting_qubit, num_qubits):
-    qubits = range(num_qubits)
-    if acting_qubit >= num_qubits:
-        print "Error. Pauli matrix over-indexed"
-    else:
-        def X_tensor(acting_qubit, qubit):
-            if qubit == acting_qubit:
-                return sigmax()
-            else: 
-                return identity(2)
-        return tensor([X_tensor(acting_qubit, qubit) for qubit in qubits])
-
-def Y(acting_qubit, num_qubits):
-    qubits = range(num_qubits)
-    if acting_qubit >= num_qubits:
-        print "Error. Pauli matrix over-indexed"
-    else:
-        def Y_tensor(acting_qubit, qubit):
-            if qubit == acting_qubit:
-                return sigmay()
-            else: 
-                return identity(2)
-        return tensor([Y_tensor(acting_qubit, qubit) for qubit in qubits])
-
-
-def Z(acting_qubit, num_qubits):
-    qubits = range(num_qubits)
-    if acting_qubit >= num_qubits:
-        print "Error. Pauli matrix over-indexed"
-    else:
-        def Z_tensor(acting_qubit, qubit):
-            if qubit == acting_qubit:
-                return sigmaz()
-            else: 
-                return identity(2)
-        return tensor([Z_tensor(acting_qubit, qubit) for qubit in qubits])
-
-
-#Define D Wave Hamiltonian
-def bulk_coupling(J, K, qubit_index, num_qubits):
-    if qubit_index >= num_qubits - 1:
-        print "Error. coupler is over-indexed"
-    else:
-        if num_qubits % 2 == 0:
-            if qubit_index in [num_qubits/2 - 1, num_qubits/2]:
-                return -J
-            else:
-                return -K
-        else:
-            if qubit_index in [num_qubits/2 - 1, num_qubits/2]:
-                return -J
-            else:
-                return -K
-               
-def d_wave_hamiltonian(s, I, J, K, num_qubits):
-    qubits = range(num_qubits)
-    s_rescaled = int(max(0, s*round(len(ANNEALING_PARAMETER)) - 1))
-    bulk_terms = sum([bulk_coupling(J, K, qubit, num_qubits)*Z(qubit, num_qubits)*Z(qubit + 1, num_qubits) for qubit in range(num_qubits - 1)])
-    boundary_term = I*Z(qubits[-1], num_qubits)*Z(qubits[0], num_qubits)
-    raw_problem_hamiltonian = bulk_terms + boundary_term
-    raw_driver_hamiltonian = sum([X(qubit, num_qubits) for qubit in qubits])
-    problem_hamiltonian = 2*np.pi*(PROBLEM_COEFFICIENT[s_rescaled]/2)*raw_problem_hamiltonian
-    driver_hamiltonian = 2*np.pi*(DRIVER_COEFFICIENT[s_rescaled]/2)*raw_driver_hamiltonian
-    return problem_hamiltonian + driver_hamiltonian
-                    
-def eta(s):
-    s_rescaled = int(max(0, s*round(len(ANNEALING_PARAMETER)) - 1))
-    return ETA_MRT*(B[s_rescaled]/B[-1])
+# Custom Modules:
+import parameters
 
 
 # Spectral Density
 
 def S(s, omega): 
-    numerator =  (hbar**2)*eta(s)*omega*np.exp(-np.abs(omega)*10**(-40))
-    denominator = 1-np.exp(-(HBAR*omega)/(KB*T))
+    numerator =  (hbar**2)*eta(s)*omega*np.exp(-np.abs(omega)*parameters.BATH_CUTOFF_TIME)
+    denominator = 1-np.exp(-(parameters.HBAR*omega)/(parameters.KB*parameters.OPERATING_TEMPERATURE))
     return numerator/denominator
 
-def delta(i,j):
-    if i == j:
-        return 1
-    else:
-        return 0
 
 def O_tensor(O_matrix):
     states = range(len(O_matrix[0]))
