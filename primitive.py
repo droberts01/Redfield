@@ -16,46 +16,7 @@ import numpy.linalg as linalg
 
 # Custom Modules:
 import parameters
-
-
-#Define Pauli matrices. e.g. X(actingQubit) is the bit flip operator on actingQubit.
-
-def X(acting_qubit):
-    qubits = range(parameters.NUM_QUBITS)
-    if acting_qubit >= parameters.NUM_QUBITS:
-        print "Error. Pauli matrix over-indexed"
-    else:
-        def X_tensor(acting_qubit, qubit):
-            if qubit == acting_qubit:
-                return sigmax()
-            else: 
-                return identity(2)
-        return tensor([X_tensor(acting_qubit, qubit) for qubit in qubits])
-
-def Y(acting_qubit):
-    qubits = range(parameters.NUM_QUBITS)
-    if acting_qubit >= parameters.NUM_QUBITS:
-        print "Error. Pauli matrix over-indexed"
-    else:
-        def Y_tensor(acting_qubit, qubit):
-            if qubit == acting_qubit:
-                return sigmay()
-            else: 
-                return identity(2)
-        return tensor([Y_tensor(acting_qubit, qubit) for qubit in qubits])
-
-
-def Z(acting_qubit):
-    qubits = range(parameters.NUM_QUBITS)
-    if acting_qubit >= parameters.NUM_QUBITS:
-        print "Error. Pauli matrix over-indexed"
-    else:
-        def Z_tensor(acting_qubit, qubit):
-            if qubit == acting_qubit:
-                return sigmaz()
-            else: 
-                return identity(2)
-        return tensor([Z_tensor(acting_qubit, qubit) for qubit in qubits])
+import helper
 
 
 #Define D Wave Hamiltonian
@@ -81,15 +42,15 @@ def f_model_problem_hamiltonian:
 	bulk_qubits = range(parameters.NUM_QUBITS-1)
 
 	def bulk_ising_term(qubit_index): 
-		return ising_coupling(qubit_index)*Z(qubit_index)*Z(qubit_index + 1)
+		return ising_coupling(qubit_index)*helper.Z(qubit_index)*helper.Z(qubit_index + 1)
 
-    boundary_ising_term = parameters.I*Z(qubits[-1])*Z(qubits[0])
+    boundary_ising_term = parameters.I*helper.Z(qubits[-1])*helper.Z(qubits[0])
     return sum([bulk_ising_term(qubit_index) for qubit_index in bulk_qubits]) + boundary_term
 
 
 def driver_hamiltonian:
 	qubits = range(parameters.NUM_QUBITS)
-	return sum([X(qubit_index) for qubit_index in qubits])
+	return sum([helper.X(qubit_index) for qubit_index in qubits])
 
 
 def d_wave_hamiltonian(s):

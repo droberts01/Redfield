@@ -20,11 +20,18 @@ ANNEALING_PARAMETER = ANNEALING_SCHEDULE[0]
 DRIVER_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[1]]
 PROBLEM_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[2]]
 ETA_MRT = 0.24
+BATH_CUTOFF_TIME = 10**(-40)
+TIME_STEP = ANNEALING_TIME*(ANNEALING_PARAMETER[1]-ANNEALING_PARAMETER[0])
 
 def ETA(s):
 	def B(s):
 		return PROBLEM_COEFFICIENT[s]
     return ETA_MRT*(B[s]/B[-1])
+
+def SPECTRAL_DENSITY(s, frequency): 
+    numerator =  (HBAR**2)*ETA(s)*frequency*np.exp(-np.abs(frequency)*BATH_CUTOFF_TIME)
+    denominator = 1-np.exp(-(HBAR*omega)/(KB*OPERATING_TEMPERATURE))
+    return numerator/denominator
 
 
 # Parameters of Computational Primitive (F-model) 
@@ -34,3 +41,4 @@ K = 1.0
 NUM_QUBITS = 5
 ANNEALING_TIME = 5*(10**(-6)))
 OPERATING_TEMPERATURE = 15.5*(10**(-3))
+NUM_STATES_CUTOFF = 2
