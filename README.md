@@ -1,7 +1,7 @@
 # Redfield
 Time-dependent Redfield solver for simulating D Wave physics
 
-Project Status: Active (Summer 2016 - Present)
+#Project Status: Active (Summer 2016 - Present)
 
 Brief Project Description:
 
