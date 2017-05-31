@@ -18,6 +18,9 @@ import numpy.linalg as linalg
 import parameters
 import helper
 
+# Load global variables
+NUM_QUBITS = parameters.NUM_QUBITS
+NUM_STATES = parameters.NUM_STATES
 
 def sigmaz_matrix_element(s,qubit_index,i,j, sorted_eigenvectors):
             helper.Z(qubit_index).matrix_element(sorted_eigenvectors[s][i],sorted_eigenvectors[s][j])
@@ -32,8 +35,8 @@ def redfield_coefficient_tensor(sorted_eigenvectors):
 
 
 def redfield_tensor(sorted_eigenvectors, frequency_matrix):
-    states = range(2**parameters.NUMQUBITS)
-    qubits = range(parameters.NUM_QUBITS)
+    states = range(NUM_STATES)
+    qubits = range(NUM_QUBITS)
 
     coefficient_tensor = redfield_coefficient_tensor(sorted_eigenvectors)
     
@@ -43,10 +46,10 @@ def redfield_tensor(sorted_eigenvectors, frequency_matrix):
         return S(frequency_matrix[s][i][j])*coefficient_tensor[s][i][j][k][l]
 
     def redfield_tensor_term_no1_components(s,i,j,k,l):
-        return sum([delta(j,l)*gamma_plus(s,i,k,n,n) for n in range(2**num_qubits)])
+        return sum([helper.delta(j,l)*gamma_plus(s,i,k,n,n) for n in range(2**num_qubits)])
 
     def redfield_tensor_term_no1_components(s,i,j,k,l):
-        return sum([delta(i,k)*gamma_minus(s,j,l,n,n) for n in range(2**num_qubits)])
+        return sum([helper.delta(i,k)*gamma_minus(s,j,l,n,n) for n in range(2**num_qubits)])
 
     def redfield_tensor_term_no3_components(s,i,j,k,l):
         return gamma_plus(s,i,j,k,l)

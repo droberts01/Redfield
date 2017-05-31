@@ -13,11 +13,15 @@ import numpy
 import parameters
 
 
-#Define Pauli matrices
+# Load parameters
+NUM_QUBITS = parameters.NUM_QUBITS
+
+
+# Define Pauli matrices
 
 def X(acting_qubit):
-    qubits = range(parameters.NUM_QUBITS)
-    if acting_qubit >= parameters.NUM_QUBITS:
+    qubits = range(NUM_QUBITS)
+    if acting_qubit >= NUM_QUBITS:
         print "Error. Pauli matrix over-indexed"
     else:
         def X_tensor(acting_qubit, qubit):
@@ -28,8 +32,8 @@ def X(acting_qubit):
         return tensor([X_tensor(acting_qubit, qubit) for qubit in qubits])
 
 def Y(acting_qubit):
-    qubits = range(parameters.NUM_QUBITS)
-    if acting_qubit >= parameters.NUM_QUBITS:
+    qubits = range(NUM_QUBITS)
+    if acting_qubit >= NUM_QUBITS:
         print "Error. Pauli matrix over-indexed"
     else:
         def Y_tensor(acting_qubit, qubit):
@@ -41,8 +45,8 @@ def Y(acting_qubit):
 
 
 def Z(acting_qubit):
-    qubits = range(parameters.NUM_QUBITS)
-    if acting_qubit >= parameters.NUM_QUBITS:
+    qubits = range(NUM_QUBITS)
+    if acting_qubit >= NUM_QUBITS:
         print "Error. Pauli matrix over-indexed"
     else:
         def Z_tensor(acting_qubit, qubit):
@@ -53,7 +57,7 @@ def Z(acting_qubit):
         return tensor([Z_tensor(acting_qubit, qubit) for qubit in qubits])
 
 
-# Define kronecker delta
+# Define Kronecker delta
 def delta(i,j):
     if i == j:
         return 1
