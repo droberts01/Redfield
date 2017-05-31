@@ -1,6 +1,6 @@
 """
 Original Developer: David Roberts
-Purpose of Module: solves time-dependent Linblad equation.
+Purpose of Module: outputs redfield Linblad.
 Last Modified: 5/30/17
 Last Modified By: David Roberts
 Last Modification Purpose: fixed function naming
@@ -18,6 +18,7 @@ import numpy.linalg as linalg
 import parameters
 import redfield
 import primitive
+
 
 def diabatic_tensor(eigenvectors):
     states = range(len(eigenvectors[0]))
@@ -72,4 +73,7 @@ def linbladian:
     
     return noninteracting_term - (redfield_term - diabatic_term)
     
+
+
+
 # 
