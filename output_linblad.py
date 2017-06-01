@@ -62,7 +62,7 @@ def linbladian:
         hamiltonian = [primitive.d_wave_hamiltonian(s) for s in ANNEALING_PARAMETER]
     else:
         print "ERR"
-        
+
     eigenvalues = [hamiltonian[s].eigenenergies() for s in ANNEALING_PARAMETER]
     eigenvectors = [hamiltonian[s].eigenstates() for s in ANNEALING_PARAMETER]
     idx = [eigenvalues[s].argsort()[::-1] for s in ANNEALING_PARAMETER]
@@ -86,7 +86,5 @@ def linbladian:
     
     return noninteracting_term - (redfield_term - diabatic_term)
     
-
-
 
 # 

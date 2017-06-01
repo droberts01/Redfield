@@ -27,9 +27,13 @@ import linblad_solver
 TIME_STEP = parameters.TIME_STEP
 NUM_STATES_CUTOFF = parameters.NUM_STATES_CUTOFF
 ANNEALING_PARAMETER = parameters.ANNEALING_PARAMETER
+INITIAL_DENSITY_MATRIX = parameters.INITIAL_DENSITY_MATRIX
 
-
-
+def merge_two_dicts(x, y):
+    """Given two dicts, merge them into a new dict as a shallow copy."""
+    z = x.copy()
+    z.update(y)
+    return z
 
 def tensor_apply(linbladian, density_matrix, s):
 
@@ -57,13 +61,21 @@ def compute_linblad_evolution(initial_density_matrix, linbladian):
 	return density_matrix_linblad_evolution
 
 
-pd.
+
+# Compute linbladian
+linblad_tensor = linbladian
+time_dependent_density_matrix = compute_linblad_evolution(INITIAL_DENSITY_MATRIX)
+time_dependent_density_matrix_array_version = [sum([time_dependent_density_matrix[s][i] for i in range(NUM_STATES_CUTOFF)]) for s in ANNEALING_PARAMETER]
+
+dict_list = [{'s'+str(s) : time_dependent_density_matrix_array_version[s]} for s in range(len(ANNEALING_PARAMETER]))]
+column_list = ['s'+str(s) for s in range(len(ANNEALING_PARAMETER))]
+
+final_dict = {}
+for dictionary in dict_list:
+	final_dict = merge_two_dicts(final_dict, dictionary)
 
 
-
-
-#
-
+df = pd.DataFrame(final_dict, columns = column_list)
 
 
 
