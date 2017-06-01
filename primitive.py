@@ -20,10 +20,16 @@ import helper
 
 
 # Load global variables
-NUM_QUBITS = parameters.NUM_QUBITS
+
+# Parameters of Computational Primitive (F-model) 
 I = parameters.I
 J = parameters.J
 K = parameters.K
+NUM_QUBITS = parameters.NUM_QUBITS
+ANNEALING_TIME = 5*(10**(-6)))
+OPERATING_TEMPERATURE = 15.5*(10**(-3))
+NUM_STATES = parameters.NUM_STATES
+NUM_STATES_CUTOFF = parameters.NUM_STATES_CUTOFF
 DRIVER_COEFFICIENT = parameters.DRIVER_COEFFICIENT
 PROBLEM_COEFFICIENT = parameters.PROBLEM_COEFFICIENT
 
@@ -58,6 +64,8 @@ def f_model_problem_hamiltonian:
     return sum([bulk_ising_term(qubit_index) for qubit_index in bulk_qubits]) + boundary_term
 
 
+
+
 def driver_hamiltonian:
 	qubits = range(NUM_QUBITS)
 	return sum([helper.X(qubit_index) for qubit_index in qubits])
@@ -72,7 +80,7 @@ def d_wave_hamiltonian(s):
     	return PROBLEM_COEFFICIENT[s]
 
     rescaled_driver_hamiltonian = (A(s)/2)*driver_hamiltonian
-    rescaled_f_model_problem_hamiltonian = (B(s)/2)*f_model_problem_hamiltonian
-
-    return 2*np.pi*(rescaled_f_model_problem_hamiltonian + rescaled_driver_hamiltonian)
+    rescaled_problem_hamiltonian = (B(s)/2)*f_model_problem_hamiltonian
+ 
+    return 2*np.pi*(rescaled_problem_hamiltonian + rescaled_driver_hamiltonian)
                     

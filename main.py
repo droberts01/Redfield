@@ -13,6 +13,8 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.linalg as linalg
+import pandas as pd
+
 
 # Custom Modules:
 import parameters
@@ -55,8 +57,12 @@ def compute_linblad_evolution(initial_density_matrix, linbladian):
 	return density_matrix_linblad_evolution
 
 
+pd.
 
 
+
+
+#
 
 
 

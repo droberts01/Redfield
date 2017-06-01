@@ -21,6 +21,7 @@ import primitive
 
 
 # Load global variables
+MODE = parameters.MODE
 NUM_STATES = parameters.NUM_STATES
 NUM_STATES_CUTOFF = parameters.NUM_STATES_CUTOFF
 TIME_STEP = parameters.TIME_STEP
@@ -55,7 +56,13 @@ def frequency_tensor(frequency_matrix):
 def linbladian:
 
 	# Initialize and diagonalize D Wave Hamiltonians
-    hamiltonian = [primitive.d_wave_hamiltonian(s) for s in ANNEALING_PARAMETER]
+    if MODE == "GOOGLE":
+        hamiltonian = [google_quail_primitive.d_wave_hamiltonian(s) for s in ANNEALING_PARAMETER]
+    elif MODE == "LANL":
+        hamiltonian = [primitive.d_wave_hamiltonian(s) for s in ANNEALING_PARAMETER]
+    else:
+        print "ERR"
+        
     eigenvalues = [hamiltonian[s].eigenenergies() for s in ANNEALING_PARAMETER]
     eigenvectors = [hamiltonian[s].eigenstates() for s in ANNEALING_PARAMETER]
     idx = [eigenvalues[s].argsort()[::-1] for s in ANNEALING_PARAMETER]
