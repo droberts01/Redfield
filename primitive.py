@@ -25,7 +25,7 @@ MODE = parameters.MODE
 
 
 # Parameters of NASA Computational Primitive (F-model) 
-if MODE == "LANL":
+if MODE == "NASA":
     I = parameters.I
     J = parameters.J
     K = parameters.K
