@@ -10,14 +10,96 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[       774,         34]
-NotebookOptionsPosition[       561,         21]
-NotebookOutlinePosition[       914,         37]
-CellTagsIndexPosition[       871,         34]
+NotebookDataLength[      3720,        122]
+NotebookOptionsPosition[      3284,        103]
+NotebookOutlinePosition[      3637,        119]
+CellTagsIndexPosition[      3594,        116]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"rawData", "=", 
+   RowBox[{
+   "Import", "[", "\"\<~/LANLA/Redfield/redfield_simulation.csv\>\"", "]"}]}],
+   ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"times", "=", 
+   RowBox[{
+   "Import", "[", "\"\<~/LANLA/Redfield/redfield_simulation_times.csv\>\"", 
+    "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.7056856614087954`*^9, 3.705685667262673*^9}, {
+  3.705686098392778*^9, 3.705686102825474*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"numStatesCutoff", " ", "=", " ", 
+   SqrtBox[
+    RowBox[{"Length", "[", 
+     RowBox[{"data", "[", 
+      RowBox[{"[", "1", "]"}], "]"}], "]"}]]}], ";"}]], "Input",
+ CellChangeTimes->{{3.705685753032645*^9, 3.705685772304784*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"VectorToMatrix", "[", "vector_", "]"}], ":=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"vector", "[", 
+      RowBox[{"[", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"numStatesCutoff", " ", "i"}], " ", "+", " ", "j"}], ")"}], 
+        "+", "1"}], "]"}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", "0", ",", 
+       RowBox[{"numStatesCutoff", "-", "1"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"j", ",", "0", ",", 
+       RowBox[{"numStatesCutoff", "-", "1"}]}], "}"}]}], "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.705685580143704*^9, 3.705685614046767*^9}, {
+  3.7056856752162952`*^9, 3.7056856886782713`*^9}, {3.705685740944682*^9, 
+  3.705685745933956*^9}, {3.7056857892774*^9, 3.705685803379184*^9}, {
+  3.7056858668024387`*^9, 3.705685884792364*^9}, {3.7056859235454903`*^9, 
+  3.7056859406637907`*^9}, {3.705686047059073*^9, 3.7056860831450653`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"data", " ", "=", " ", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"VectorToMatrix", "[", "#", "]"}], "&"}], "/@", "rawData"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.705686091521565*^9, 3.705686114440435*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"timeSeries", "[", 
+   RowBox[{"i_", ",", "j_"}], "]"}], ":=", 
+  RowBox[{"Transpose", "@", 
+   RowBox[{"{", 
+    RowBox[{"times", ",", 
+     RowBox[{"data", "[", 
+      RowBox[{"[", 
+       RowBox[{";;", ",", "i", ",", "j"}], "]"}], "]"}]}], "}"}]}]}]], "Input",\
+
+ CellChangeTimes->{{3.705686117669265*^9, 3.7056861691579313`*^9}, {
+  3.70568620634857*^9, 3.705686208876458*^9}}],
+
+Cell[BoxData[
+ RowBox[{"ListPlot", "[", 
+  RowBox[{
+   RowBox[{"timeSeries", "[", 
+    RowBox[{"1", ",", "1"}], "]"}], ",", 
+   RowBox[{"PlotRange", "\[Rule]", " ", 
+    RowBox[{"{", 
+     RowBox[{"0", ",", "1"}], "}"}]}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.705686088205646*^9, 3.7056860897214937`*^9}, {
+  3.7056862144282103`*^9, 3.70568625019873*^9}}]
 },
 WindowSize->{1432, 765},
 WindowMargins->{{3, Automatic}, {Automatic, 2}},
@@ -36,6 +118,12 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
+Cell[558, 20, 448, 12, 69, "Input"],
+Cell[1009, 34, 266, 7, 59, "Input"],
+Cell[1278, 43, 975, 24, 69, "Input"],
+Cell[2256, 69, 244, 7, 43, "Input"],
+Cell[2503, 78, 415, 12, 44, "Input"],
+Cell[2921, 92, 359, 9, 43, "Input"]
 }
 ]
 *)

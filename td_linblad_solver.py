@@ -41,6 +41,7 @@ for time_index in time_indices:
 
 output_evolution = np.array(output_evolution)
 np.savetxt("redfield_simulation.csv", output_evolution, delimiter=",")
+np.savetxt("redfield_simulation_times.csv", list_of_t, delimiter=",")
 
 
 
