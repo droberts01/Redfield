@@ -22,7 +22,8 @@ list_of_t = parameters.LIST_OF_TIMES
 
 # Program runs here:
 print ("computing hamiltonians...")
-list_of_hamiltonians = map(primitive.hamiltonian, list_of_s)
+list_of_hamiltonians_Qobj = map(primitive.hamiltonian, list_of_s)
+list_of_hamiltonians = [np.real(hamiltonian.full()) for hamiltonian in list_of_hamiltonians_Qobj]
 print ("computing eigenvalues...")
 list_of_eigenvalues = map(np.linalg.eigvals, list_of_hamiltonians)
 print ("truncating eigenvalues...")
@@ -30,7 +31,8 @@ list_of_eigenvalues = map(helper.truncate, list_of_eigenvalues)
 print ("computing frequency tensors...")
 list_of_frequency_tensors = map(redfield.compute_frequency_tensor, list_of_eigenvalues)
 print ("computing redfield tensors...")
-list_of_redfield_output = map(redfield.compute_redfield_tensor, list(zip(list_of_s, list_of_hamiltonians)))
+list_of_redfield_output = map(redfield.compute_redfield_tensor, zip(list_of_s, list_of_hamiltonians_Qobj))
+print (list_of_redfield_output[0])
 list_of_redfield_tensors, list_of_eigenstates = zip(list_of_redfield_output)
 list_of_eigenstates = map(helper.truncate, list_of_eigenstates)
 print ("computing diabatic tensors...")

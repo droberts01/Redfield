@@ -26,7 +26,8 @@ num_qubits = parameters.NUM_QUBITS
 qubits = range(num_qubits)
 
 
-def compute_redfield_tensor(s, hamiltonian):
+def compute_redfield_tensor(args):
+	s, hamiltonian = args
 	def redfield_spectral_density(qubit):
 		return spectral_density_function(s)
 	redfield_tensor_Qobj, eigenstates = bloch_redfield_tensor(hamiltonian, map(helper.Z, qubits), 
@@ -36,7 +37,7 @@ def compute_redfield_tensor(s, hamiltonian):
 		I, J = multi_index
 		return redfield_tensor_reals[I][J]
 	redfield_compact_tensor = helper.Compact_Tensor(compact_tensor_components)
-	redfield_tensor = get_tensor_from_compact_tensor(redfield_compact_tensor)
+	redfield_tensor = helper.get_tensor_from_compact_tensor(redfield_compact_tensor)
 	return redfield_tensor
 
 
@@ -49,8 +50,8 @@ bath_coupling = parameters.BATH_COUPLING
 
 def spectral_density_function(s):
 	def spectral_density(frequency):
-		numerator = hbar**2 * parameters.bath_coupling(s) * frequency * np.exp(-abs(frequency)*bath_cutoff_time)
-		demoninator = 1 - np.exp(-hbar * frequency / (boltzmann_constant * system_temperature))
+		numerator = hbar**2 * bath_coupling(s) * frequency * np.exp(-abs(frequency)*bath_cutoff_time)
+		denominator = 1 - np.exp(-hbar * frequency / (boltzmann_constant * system_temperature))
 		return numerator/denominator
 	return spectral_density
 

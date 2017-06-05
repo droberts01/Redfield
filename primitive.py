@@ -119,5 +119,6 @@ def hamiltonian(s):
     else:
         rescaled_problem_hamiltonian = (B(s)/2)*f_model_problem_hamiltonian
  
-    final_hamiltonian = 2*np.pi*(rescaled_problem_hamiltonian + rescaled_driver_hamiltonian)
-    return np.real(final_hamiltonian.full())
+    return 2*np.pi*(rescaled_problem_hamiltonian + rescaled_driver_hamiltonian)
+
+

@@ -44,11 +44,11 @@ LIST_OF_TIMES = [ANNEALING_TIME * s for s in S_VALUES]
 
 
 def A(s):
-	s_int = int(round(len(ANNEALING_PARAMETER) * s))
+	s_int = max(int(round(len(ANNEALING_PARAMETER) * s)) - 1, 0)
 	return DRIVER_COEFFICIENT[s_int]
 
 def B(s):
-	s_int = int(round(len(ANNEALING_PARAMETER) * s))
+	s_int = max(int(round(len(ANNEALING_PARAMETER) * s)) - 1, 0)
 	return PROBLEM_COEFFICIENT[s_int]
 
 
