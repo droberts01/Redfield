@@ -1,7 +1,7 @@
 """
 Original Developer: David Roberts
 Purpose of Module: To specify input parameters for the time-dependent Redfield solver
-Last Modified: 5/30/17
+Last Modified: 6/5/17
 Last Modified By: David Roberts
 Last Modification Purpose: Created module
 """
@@ -22,7 +22,7 @@ HBAR = 6.62607*(10**(-34))
 # Operating Parameters
 if MODE == "GOOGLE":
 	ANNEALING_SCHEDULE = pd.read_csv('~/Documents/LANLA/DWaveAnnealingSchedule_Google.csv', sep=',',header=None)
-elif MODE == "LANL":
+elif MODE == "NASA":
 	ANNEALING_SCHEDULE = pd.read_csv('~/Documents/LANLA/DWaveAnnealingSchedule.csv', sep=',',header=None)
 else:
 	print "ERR"
@@ -30,22 +30,30 @@ else:
 ANNEALING_PARAMETER = ANNEALING_SCHEDULE[0]
 DRIVER_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[1]]
 PROBLEM_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[2]]
-ETA_MRT = 0.24
+BATH_COUPLING_MRT = 0.24
 BATH_CUTOFF_TIME = 10**(-40)
 TIME_STEP = ANNEALING_TIME*(ANNEALING_PARAMETER[1]-ANNEALING_PARAMETER[0])
-INITIAL_DENSITY_MATRIX = [[1,0],[0,0]]
+NUM_STATES_CUTOFF = 2
+INITIAL_DENSITY_MATRIX = ([0]*NUM_STATES_CUTOFF)*NUM_STATES_CUTOFF
+INITIAL_DENSITY_MATRIX[0][0] = 1
 
 
-def ETA(s):
-	def B(s):
-		return PROBLEM_COEFFICIENT[s]
-    return ETA_MRT*(B[s]/B[-1])
+# Defines discretization of Linblad ODE
+S_VALUES = range(0,1,.001)
+LIST_OF_TIMES = [ANNEALING_TIME * s for s in S_VALUES]
 
-def SPECTRAL_DENSITY(s, frequency): 
-    numerator =  (HBAR**2)*ETA(s)*frequency*np.exp(-np.abs(frequency)*BATH_CUTOFF_TIME)
-    denominator = 1-np.exp(-(HBAR*frequency)/(KB*OPERATING_TEMPERATURE))
-    return numerator/denominator
 
+def A(s):
+	s_int = round(len(ANNEALING_PARAMETER) * s)
+	return DRIVER_COEFFICIENT[s_int]
+
+def B(s):
+	s_int = round(len(ANNEALING_PARAMETER) * s)
+	return PROBLEM_COEFFICIENT[s_int]
+
+
+def BATH_COUPLING(s):
+    return BATH_COUPLING_MRT*(B(s)/B(1))
 
 
 if MODE == "GOOGLE":
@@ -57,7 +65,6 @@ if MODE == "GOOGLE":
 	ANNEALING_TIME = 5*(10**(-6)))
 	OPERATING_TEMPERATURE = 15.5*(10**(-3))
 	NUM_STATES = 2**NUM_QUBITS
-	NUM_STATES_CUTOFF = 2
 	cluster1 = []
 	for i in range(4):
 		for j in range(4)
@@ -67,7 +74,7 @@ if MODE == "GOOGLE":
 	PAIR_SET = cluster1 + cluster2 + pairs_connecting_cluster1_and_cluster_2
 
 
-elif MODE == "LANL":
+elif MODE == "NASA":
 # Parameters of Computational Primitive (F-model) 
 	I = .2
 	J = .3
@@ -76,7 +83,6 @@ elif MODE == "LANL":
 	ANNEALING_TIME = 5*(10**(-6)))
 	OPERATING_TEMPERATURE = 15.5*(10**(-3))
 	NUM_STATES = 2**NUM_QUBITS
-	NUM_STATES_CUTOFF = 2
 else:
 	print "ERR"
 

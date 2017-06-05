@@ -1,68 +1,110 @@
 """
 Original Developer: David Roberts
-Purpose of Module: outputs Redfield tensor
-Last Modified: 5/30/17
+Purpose of Module: provides functions to construct the Linbladian in linblad.py,
+according to Redfield approximation
+Last Modified: 6/5/17
 Last Modified By: David Roberts
-Last Modification Purpose: fixed function naming
+Last Modification Purpose: Created module
 """
-
 
 # Standard Modules:
 from qutip import *
-import csv
 import numpy as np
-import matplotlib.pyplot as plt
-import numpy.linalg as linalg
+import numpy.exp as exp
+
 
 # Custom Modules:
 import parameters
 import helper
-
-# Load global variables
-NUM_QUBITS = parameters.NUM_QUBITS
-NUM_STATES = parameters.NUM_STATES
-SPECTRAL_DENSITY = parameters.SPECTRAL_DENSITY
-
-
-def sigmaz_matrix_element(s,qubit_index,i,j, sorted_eigenvectors):
-            helper.Z(qubit_index).matrix_element(sorted_eigenvectors[s][i],sorted_eigenvectors[s][j])
+import helper.X as X
+import helper.Y as Y
+import helper.Z as Z
+import helper.delta as delta
 
 
-def redfield_coefficient_tensor(sorted_eigenvectors):
- 
-    def redfield_coefficient_tensor_components(s,i,j,k,l):
-        return sum([sigmaz_matrix_element(s,qubit,i,k, sorted_eigenvectors)*sigmaz_matrix_element(s,qubit,j,l, sorted_eigenvectors) for qubit in range(NUM_QUBITS)])
- 
-    return [[[[[redfield_coefficient_tensor_components(s,i,j,k,l) for l in range(NUM_STATES)] for k in range(NUM_STATES)] for j in range(NUM_STATES)] for i in range(NUM_STATES)] for s in ANNEALING_PARAMETER]
+
+# 3. Define the Redfield tensor
+# The Redfield tensor R_ijkl is a term in the Linbladian which encodes the effects of the environment
+# on the system treated within the Redfield formalism.
+
+num_qubits = parameters.NUM_QUBITS
+qubits = range(num_qubits)
 
 
-def redfield_tensor(sorted_eigenvectors, frequency_matrix):
-    states = range(NUM_STATES)
-    qubits = range(NUM_QUBITS)
+def compute_redfield_tensor(s, hamiltonian):
+	def redfield_spectral_density(qubit):
+		return spectral_density_function(s)
+	redfield_tensor_Qobj, eigenstates = bloch_redfield_tensor(hamiltonian, map(Z, qubits), 
+																map(redfield_spectral_density, qubits))
+	redfield_tensor_reals = np.real(redfield_tensor_Qobj.full())
+	def compact_tensor_components(multi_index):
+		I, J = multi_index
+		return redfield_tensor_reals[I][J]
+	redfield_compact_tensor = helper.Compact_Tensor(compact_tensor_components)
+	redfield_tensor = get_tensor_from_compact_tensor(redfield_compact_tensor)
+	return redfield_tensor
 
-    coefficient_tensor = redfield_coefficient_tensor(sorted_eigenvectors)
-    
-    def gamma_plus(s,i,j,k,l):
-        return SPECTRAL_DENSITY(-frequency_matrix[s][k][l])*coefficient_tensor[s][i][j][k][l]
-    def gamma_minus(s,i,j,k,l):
-        return SPECTRAL_DENSITY(frequency_matrix[s][i][j])*coefficient_tensor[s][i][j][k][l]
 
-    def redfield_tensor_term_no1_components(s,i,j,k,l):
-        return sum([helper.delta(j,l)*gamma_plus(s,i,k,n,n) for n in range(2**num_qubits)])
+system_temperature = parameters.OPERATING_TEMPERATURE
+bath_cutoff_time = parameters.BATH_CUTOFF_TIME
+boltzmann_constant = parameters.KB
+hbar = parameters.HBAR
+bath_coupling = parameters.BATH_COUPLING
 
-    def redfield_tensor_term_no2_components(s,i,j,k,l):
-        return sum([helper.delta(i,k)*gamma_minus(s,j,l,n,n) for n in range(2**num_qubits)])
 
-    def redfield_tensor_term_no3_components(s,i,j,k,l):
-        return gamma_plus(s,i,j,k,l)
+def spectral_density_function(s):
+	def spectral_density(frequency):
+		numerator = hbar**2 * parameters.bath_coupling(s) * frequency * exp(-abs(frequency)*bath_cutoff_time)
+		demoninator = 1 - exp(-hbar * frequency / (boltzmann_constant * system_temperature))
+		return numerator/denominator
+	return spectral_density
 
-    def redfield_tensor_term_no4_components(s,i,j,k,l):
-        return gamma_minus(s,i,j,k,l)
-    
-    redfield_tensor_term_no1 = [[[[[redfield_tensor_term_no1_components(s,i,j,k,l) for l in states] for k in states] for j in states] for i in states] for s in ANNEALING_PARAMETER]
-    redfield_tensor_term_no2 = [[[[[redfield_tensor_term_no2_components(s,i,j,k,l) for l in states] for k in states] for j in states] for i in states] for s in ANNEALING_PARAMETER]
-    redfield_tensor_term_no3 = [[[[[redfield_tensor_term_no3_components(s,i,j,k,l) for l in states] for k in states] for j in states] for i in states] for s in ANNEALING_PARAMETER]
-    redfield_tensor_term_no4 = [[[[[redfield_tensor_term_no4_components(s,i,j,k,l) for l in states] for k in states] for j in states] for i in states] for s in ANNEALING_PARAMETER]
-    
-    return redfield_tensor_term_no1 + redfield_tensor_term_no2 - redfield_tensor_term_no3 - redfield_tensor_term_no4
+
+
+# 2. Define the frequency tensor
+# The frequency tensor defines the non-interacting dynamics of the system.
+
+def compute_frequency_tensor(eigenvalues):
+	frequency_matrix = [[Ei - Ej for Ei in eigenvalues] for Ej in eigenvalues]
+	def tensor_components(multi_index):
+		i, j, k, l = multi_index
+		return -1j * frequency_matrix[i][j] * delta(i, k) * delta(j, l)
+	return helper.Tensor(tensor_components)
+
+
+
+# 3. Define the diabatic tensor
+# The diabatic tensor M_ijkl is a term in the Linbladian which encodes diabatic transitions in the system.
+
+num_eigenstates = parameters.NUM_STATES
+eigenstates = range(num_eigenstates)
+list_of_t = parameters.LIST_OF_TIMES
+list_of_time_indices = range(len(list_of_t))
+
+
+def compute_diabatic_tensors(eigenstates):
+	def braket(i, j, time_index):
+		bra = eigenstates[time_index + 1][i] + eigenstates[time_index - 1][i]
+		ket = eigenstates[time_index + 1][j] - eigenstates[time_index - 1][j]
+		time_step = list_of_t[time_index + 1] - list_of_t[time_index]
+		identity_matrix = identity(num_eigenstates)
+		return identity_matrix.matrix_element(bra, ket)/(4 * time_step)
+
+	def tensor_component_function(time_index):
+		if time_index == 0:
+			def tensor_components(multi_index):
+				i, j, k, l = multi_index
+				return 0
+		else:
+			def tensor_components(multi_index):
+				i, j, k, l = multi_index
+				return delta(i, k)  *braket(l, j, time_index) + delta(j, l) * braket(i, k, time_index)
+		return tensor_components
+
+	list_of_diabatic_tensor_component_functions = map(tensor_component_function, list_of_time_indices)
+	return map(helper.Tensor, list_of_diabatic_tensor_component_functions)
+
+
+
+
 
