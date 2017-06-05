@@ -11,8 +11,8 @@ import pandas as pd
 
 
 # Specifies mode of operation
-# MODE = LANL
-MODE = "GOOGLE"
+# MODE = "LANL"
+MODE = "NASA"
 
 
 # Fundamental Constants in SI Units
@@ -27,28 +27,28 @@ elif MODE == "NASA":
 else:
 	print "ERR"
 
+ANNEALING_TIME = 5*(10**(-6))
 ANNEALING_PARAMETER = ANNEALING_SCHEDULE[0]
 DRIVER_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[1]]
 PROBLEM_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[2]]
 BATH_COUPLING_MRT = 0.24
 BATH_CUTOFF_TIME = 10**(-40)
-TIME_STEP = ANNEALING_TIME*(ANNEALING_PARAMETER[1]-ANNEALING_PARAMETER[0])
 NUM_STATES_CUTOFF = 2
-INITIAL_DENSITY_MATRIX = ([0]*NUM_STATES_CUTOFF)*NUM_STATES_CUTOFF
+INITIAL_DENSITY_MATRIX = [[0]*NUM_STATES_CUTOFF]*NUM_STATES_CUTOFF
 INITIAL_DENSITY_MATRIX[0][0] = 1
 
 
 # Defines discretization of Linblad ODE
-S_VALUES = range(0,1,.001)
+S_VALUES = range(0,1,1000)
 LIST_OF_TIMES = [ANNEALING_TIME * s for s in S_VALUES]
 
 
 def A(s):
-	s_int = round(len(ANNEALING_PARAMETER) * s)
+	s_int = int(round(len(ANNEALING_PARAMETER) * s))
 	return DRIVER_COEFFICIENT[s_int]
 
 def B(s):
-	s_int = round(len(ANNEALING_PARAMETER) * s)
+	s_int = int(round(len(ANNEALING_PARAMETER) * s))
 	return PROBLEM_COEFFICIENT[s_int]
 
 
@@ -62,12 +62,11 @@ if MODE == "GOOGLE":
 	h2 = -1
 	J = 1
 	NUM_QUBITS = 16
-	ANNEALING_TIME = 5*(10**(-6)))
 	OPERATING_TEMPERATURE = 15.5*(10**(-3))
 	NUM_STATES = 2**NUM_QUBITS
 	cluster1 = []
 	for i in range(4):
-		for j in range(4)
+		for j in range(4):
 			cluster1 = cluster1 + [[0 + i, 4 + j]]
 	cluster2 = [[pair[0]+8,pair[1]+8] for pair in cluster1]
 	pairs_connecting_cluster1_and_cluster_2 = [[4 + j, 12 + j] for j in range(4)]
@@ -80,7 +79,6 @@ elif MODE == "NASA":
 	J = .3
 	K = 1.0
 	NUM_QUBITS = 5
-	ANNEALING_TIME = 5*(10**(-6)))
 	OPERATING_TEMPERATURE = 15.5*(10**(-3))
 	NUM_STATES = 2**NUM_QUBITS
 else:

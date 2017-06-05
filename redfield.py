@@ -10,16 +10,11 @@ Last Modification Purpose: Created module
 # Standard Modules:
 from qutip import *
 import numpy as np
-import numpy.exp as exp
 
 
 # Custom Modules:
 import parameters
 import helper
-import helper.X as X
-import helper.Y as Y
-import helper.Z as Z
-import helper.delta as delta
 
 
 
@@ -34,7 +29,7 @@ qubits = range(num_qubits)
 def compute_redfield_tensor(s, hamiltonian):
 	def redfield_spectral_density(qubit):
 		return spectral_density_function(s)
-	redfield_tensor_Qobj, eigenstates = bloch_redfield_tensor(hamiltonian, map(Z, qubits), 
+	redfield_tensor_Qobj, eigenstates = bloch_redfield_tensor(hamiltonian, map(helper.Z, qubits), 
 																map(redfield_spectral_density, qubits))
 	redfield_tensor_reals = np.real(redfield_tensor_Qobj.full())
 	def compact_tensor_components(multi_index):
@@ -54,8 +49,8 @@ bath_coupling = parameters.BATH_COUPLING
 
 def spectral_density_function(s):
 	def spectral_density(frequency):
-		numerator = hbar**2 * parameters.bath_coupling(s) * frequency * exp(-abs(frequency)*bath_cutoff_time)
-		demoninator = 1 - exp(-hbar * frequency / (boltzmann_constant * system_temperature))
+		numerator = hbar**2 * parameters.bath_coupling(s) * frequency * np.exp(-abs(frequency)*bath_cutoff_time)
+		demoninator = 1 - np.exp(-hbar * frequency / (boltzmann_constant * system_temperature))
 		return numerator/denominator
 	return spectral_density
 
@@ -68,7 +63,7 @@ def compute_frequency_tensor(eigenvalues):
 	frequency_matrix = [[Ei - Ej for Ei in eigenvalues] for Ej in eigenvalues]
 	def tensor_components(multi_index):
 		i, j, k, l = multi_index
-		return -1j * frequency_matrix[i][j] * delta(i, k) * delta(j, l)
+		return -1j * frequency_matrix[i][j] * helper.delta(i, k) * helper.delta(j, l)
 	return helper.Tensor(tensor_components)
 
 
@@ -98,7 +93,7 @@ def compute_diabatic_tensors(eigenstates):
 		else:
 			def tensor_components(multi_index):
 				i, j, k, l = multi_index
-				return delta(i, k)  *braket(l, j, time_index) + delta(j, l) * braket(i, k, time_index)
+				return helper.delta(i, k)  *braket(l, j, time_index) + helper.delta(j, l) * braket(i, k, time_index)
 		return tensor_components
 
 	list_of_diabatic_tensor_component_functions = map(tensor_component_function, list_of_time_indices)

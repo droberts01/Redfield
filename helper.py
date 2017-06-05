@@ -8,7 +8,7 @@ Last Modification Purpose: Created module
 
 # Standard Modules:
 from qutip import *
-import numpy
+import numpy as np
 
 # Custom Modules:
 import parameters
@@ -27,7 +27,7 @@ num_eigenstates = parameters.NUM_STATES_CUTOFF
 eigenstates = range(num_eigenstates)
 
 class Tensor:
-    def _init_(self, components):
+    def __init__(self, components):
         self.array = np.array([[[[components([i,j,k,l]) for l in eigenstates] 
                                                                 for k in eigenstates] 
                                                                     for j in eigenstates] 
@@ -46,7 +46,7 @@ compact_eigenstates = range(num_compact_eigenstates)
 
 
 class Compact_Tensor:
-    def _init_(self, components):
+    def __init__(self, components):
         self.array = np.array([[components([I,J]) for J in compact_eigenstates] 
                                                                 for I in compact_eigenstates])
         self.components = components
@@ -60,7 +60,7 @@ compact_compact_eigenstates = range(num_compact_compact_eigenstates)
 
 
 class Compact_Compact_Tensor:
-    def _init_(self, components):
+    def __init__(self, components):
         self.array = np.array([components(I) for I in compact_compact_eigenstates])
         self.components = components
 
@@ -152,8 +152,8 @@ def get_compact_compact_tensor_from_compact_tensor(compact_tensor):
 
 # Define Pauli matrices
 def X(acting_qubit):
-    qubits = range(NUM_QUBITS)
-    if acting_qubit >= NUM_QUBITS:
+    qubits = range(num_qubits)
+    if acting_qubit >= num_qubits:
         print "Error. Pauli matrix over-indexed"
     else:
         def X_tensor(acting_qubit, qubit):
@@ -164,8 +164,8 @@ def X(acting_qubit):
         return tensor([X_tensor(acting_qubit, qubit) for qubit in qubits])
 
 def Y(acting_qubit):
-    qubits = range(NUM_QUBITS)
-    if acting_qubit >= NUM_QUBITS:
+    qubits = range(num_qubits)
+    if acting_qubit >= num_qubits:
         print "Error. Pauli matrix over-indexed"
     else:
         def Y_tensor(acting_qubit, qubit):
@@ -177,8 +177,8 @@ def Y(acting_qubit):
 
 
 def Z(acting_qubit):
-    qubits = range(NUM_QUBITS)
-    if acting_qubit >= NUM_QUBITS:
+    qubits = range(num_qubits)
+    if acting_qubit >= num_qubits:
         print "Error. Pauli matrix over-indexed"
     else:
         def Z_tensor(acting_qubit, qubit):
