@@ -77,7 +77,7 @@ def init_compact_compact_tensor_from_array(array):
 def get_sum_of_functions(list_of_functions):
      def sum_of_functions(inputs):
          outputs = [function(inputs) for function in list_of_functions]
-         sum_ouputs = sum(ouputs)
+         sum_outputs = sum(outputs)
          return sum_outputs
      return sum_of_functions
 

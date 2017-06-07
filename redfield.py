@@ -10,7 +10,7 @@ Last Modification Purpose: Created module
 # Standard Modules:
 from qutip import *
 import numpy as np
-
+import math
 
 # Custom Modules:
 import parameters
@@ -31,14 +31,14 @@ def compute_redfield_tensor(args):
 	def redfield_spectral_density(qubit):
 		return spectral_density_function(s)
 	redfield_tensor_Qobj, eigenstates = bloch_redfield_tensor(hamiltonian, map(helper.Z, qubits), 
-																map(redfield_spectral_density, qubits))
+																map(redfield_spectral_density, qubits), use_secular=True)
 	redfield_tensor_reals = np.real(redfield_tensor_Qobj.full())
 	def compact_tensor_components(multi_index):
 		I, J = multi_index
 		return redfield_tensor_reals[I][J]
 	redfield_compact_tensor = helper.Compact_Tensor(compact_tensor_components)
 	redfield_tensor = helper.get_tensor_from_compact_tensor(redfield_compact_tensor)
-	return redfield_tensor
+	return [redfield_tensor, eigenstates]
 
 
 system_temperature = parameters.OPERATING_TEMPERATURE
@@ -51,21 +51,30 @@ bath_coupling = parameters.BATH_COUPLING
 def spectral_density_function(s):
 	def spectral_density(frequency):
 		numerator = hbar**2 * bath_coupling(s) * frequency * np.exp(-abs(frequency)*bath_cutoff_time)
-		denominator = 1 - np.exp(-hbar * frequency / (boltzmann_constant * system_temperature))
-		return numerator/denominator
+		# Analytical continuation of spectral density to the real axis:
+		if frequency == 0:
+			return boltzmann_constant * system_temperature * bath_coupling(s) / hbar
+		elif frequency > 10**11: #Prevent numerical overflow of np.exp() - 100 GHz cutoff
+			denominator = 1.0
+			return numerator / denominator
+		elif frequency < -10**11: #- 100 GHz cutoff
+			return 0.0
+		else:
+			denominator = 1 - np.exp(-hbar * frequency / (boltzmann_constant * system_temperature))
+			return numerator / denominator
 	return spectral_density
 
 
 
-# 2. Define the frequency tensor
-# The frequency tensor defines the non-interacting dynamics of the system.
+# # 2. Define the frequency tensor
+# # The frequency tensor defines the non-interacting dynamics of the system.
 
-def compute_frequency_tensor(eigenvalues):
-	frequency_matrix = [[Ei - Ej for Ei in eigenvalues] for Ej in eigenvalues]
-	def tensor_components(multi_index):
-		i, j, k, l = multi_index
-		return -1j * frequency_matrix[i][j] * helper.delta(i, k) * helper.delta(j, l)
-	return helper.Tensor(tensor_components)
+# def compute_frequency_tensor(eigenvalues):
+# 	frequency_matrix = [[Ei - Ej for Ei in eigenvalues] for Ej in eigenvalues]
+# 	def tensor_components(multi_index):
+# 		i, j, k, l = multi_index
+# 		return -1j * frequency_matrix[i][j] * helper.delta(i, k) * helper.delta(j, l)
+# 	return helper.Tensor(tensor_components)
 
 
 
@@ -87,7 +96,7 @@ def compute_diabatic_tensors(eigenstates):
 		return identity_matrix.matrix_element(bra, ket)/(4 * time_step)
 
 	def tensor_component_function(time_index):
-		if time_index == 0:
+		if time_index == 0 or time_index >= len(list_of_t)- 1:
 			def tensor_components(multi_index):
 				i, j, k, l = multi_index
 				return 0

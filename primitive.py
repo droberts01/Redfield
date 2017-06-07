@@ -34,7 +34,7 @@ if MODE == "NASA":
     A = parameters.A
     B = parameters.B
         
-    # defines google_probe_hamiltonian:
+    # defnes google_probe_hamiltonian:
 
 
 

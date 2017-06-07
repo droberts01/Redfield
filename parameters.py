@@ -8,7 +8,7 @@ Last Modification Purpose: Created module
 
 # Standard Modules:
 import pandas as pd
-
+import numpy as np
 
 # Specifies mode of operation
 # MODE = "LANL"
@@ -32,14 +32,14 @@ ANNEALING_PARAMETER = ANNEALING_SCHEDULE[0]
 DRIVER_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[1]]
 PROBLEM_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[2]]
 BATH_COUPLING_MRT = 0.24
-BATH_CUTOFF_TIME = 10**(-40)
+BATH_CUTOFF_TIME = 10**(-12)
 NUM_STATES_CUTOFF = 2
 INITIAL_DENSITY_MATRIX = [[0]*NUM_STATES_CUTOFF]*NUM_STATES_CUTOFF
 INITIAL_DENSITY_MATRIX[0][0] = 1
 
 
 # Defines discretization of Linblad ODE
-S_VALUES = range(0,1,1000)
+S_VALUES = np.arange(0,1,.1)
 LIST_OF_TIMES = [ANNEALING_TIME * s for s in S_VALUES]
 
 
