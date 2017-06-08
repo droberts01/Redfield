@@ -121,7 +121,7 @@ def get_compact_compact_tensor_from_tensor(tensor):
         j,remainder = divmod(remainder, num_eigenstates**2)
         k,l = divmod(remainder, num_eigenstates)
         return components([i, j, k, l])
-    return Compact_Compact_Tensor(components)
+    return Compact_Compact_Tensor(compact_compact_components)
 
 
 def get_tensor_from_compact_compact_tensor(compact_compact_tensor):
