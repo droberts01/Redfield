@@ -80,7 +80,7 @@ elif MODE == "NASA":
 	I = .2
 	J = .3
 	K = 1.0
-	NUM_QUBITS = 12
+	NUM_QUBITS = 10
 	OPERATING_TEMPERATURE = 15.5*(10**(-3))
 	NUM_STATES = 2**NUM_QUBITS
 else:

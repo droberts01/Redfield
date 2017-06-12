@@ -92,10 +92,11 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 	end = time.time()
 	print("computed Z in {} seconds.".format(end-start))
 
+	Jws = Jw(s_int)
 	def G_plus(i,j,k,l):
-		return Jw(s_int)(-W[j,l]) * sum(Z[:,i,k] * Z[:,j,l])
+		return Jws(-W[j,l]) * sum(Z[:,i,k] * Z[:,j,l])
 	def G_minus(i,j,k,l):
-		return Jw(s_int)(W[i,k]) * sum(Z[:,i,k] * Z[:,j,l])
+		return Jws(W[i,k]) * sum(Z[:,i,k] * Z[:,j,l])
 
 	def tensor_components(i,j,k,l):
 		sum_G_plus_innk = sum([G_plus(i,n,n,k) for n in truncated_states])
