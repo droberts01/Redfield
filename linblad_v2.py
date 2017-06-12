@@ -35,8 +35,8 @@ print ("computed hamiltonians in {} seconds.".format(end-start))
 
 print ("computing redfield tensors...")
 start = time.time() 
-list_of_redfield_output = map(redfield.compute_redfield_tensor, zip(list_of_s, list_of_hamiltonians_Qobj))
-# list_of_redfield_output = map(redfield.compute_redfield_tensor_v2, zip(list_of_s, list_of_hamiltonians))
+# list_of_redfield_output = map(redfield.compute_redfield_tensor, zip(list_of_s, list_of_hamiltonians_Qobj))
+list_of_redfield_output = map(redfield.compute_redfield_tensor_v2, zip(list_of_s, list_of_hamiltonians))
 end = time.time()
 print ("computed redfield tensors in {} seconds.".format(end-start))
 print ("unpacking redfield output...")
@@ -57,7 +57,7 @@ list_of_linblads = map(helper.get_sum_tensors, zip(list_of_redfield_tensors, lis
 list_of_compact_linblads = map(helper.get_compact_compact_tensor_from_tensor, list_of_linblads)
 
 # Export array as csv
-np.savetxt("linblad.csv", list_of_compact_linblads, delimiter=",")
+np.savetxt("linblad_v2.csv", list_of_compact_linblads, delimiter=",")
 
 globalend = time.time()
 print ("linblad.py complete. process took {} seconds.".format(globalend-globalstart))

@@ -72,80 +72,75 @@ def init_compact_compact_tensor_from_array(array):
 
 
 
-
-# get_sum_of_functions() (JW)
-def get_sum_of_functions(list_of_functions):
-     def sum_of_functions(inputs):
-         outputs = [function(inputs) for function in list_of_functions]
-         sum_outputs = sum(outputs)
-         return sum_outputs
-     return sum_of_functions
-
-
-
 def get_sum_tensors(list_of_tensors):
-    list_of_components = [tensor.components for tensor in list_of_tensors]
-    sum_of_components = get_sum_of_functions(list_of_components)
-    return Tensor(sum_of_components)
-
+    output = np.zeros((num_eigenstates, num_eigenstates, num_eigenstates, num_eigenstates), dtype = float)
+    for tensor in list_of_tensors:
+        output = np.add(output, tensor)
+    return output
 
 def get_sum_compact_tensors(list_of_compact_tensors):
-    list_of_components = [tensor.components for tensor in list_of_compact_tensors]
-    sum_of_components = get_sum_of_functions(list_of_components)
-    return Compact_Tensor(sum_of_components)
+    output = np.zeros((num_compact_eigenstates, num_compact_eigenstates), dtype = float)
+    for tensor in list_of_compact_tensors:
+        output = np.add(output, tensor)
+    return output
 
 
 def get_sum_compact_compact_tensors(list_of_compact_compact_tensors):
-    list_of_components = [tensor.components for tensor in list_of_compact_compact_tensors]
-    sum_of_components = get_sum_of_functions(list_of_components)
-    return Compact_Compact_Tensor(sum_of_components)
+    output = np.zeros((num_compact_compact_eigenstates), dtype = float)
+    for tensor in list_of_compact_compact_tensors:
+        output = np.add(output, tensor)
+    return output
 
 
 
 # Utilizes formula R_ijkl = R_IJ, where I = Ni + j,  J = Nk + l
 def get_tensor_from_compact_tensor(compact_tensor):
-    compact_components = compact_tensor.components 
     def components(multi_index):
         i, j, k, l = multi_index
         I = num_eigenstates * i + j
         J = num_eigenstates * k + l
-        return compact_components([I, J])
-    return Tensor(components)
+        return compact_tensor[I, J]
+    return np.array([[[[components([i,j,k,l]) for l in eigenstates]
+                                                for k in eigenstates]
+                                                    for j in eigenstates]
+                                                        for i in eigenstates])
 
 
 # Utilizes formula R_I = R_ijkl, where I = i N^3 + j N^2 + k N + l
 def get_compact_compact_tensor_from_tensor(tensor):
-    components = tensor.components
     def compact_compact_components(index):
         i,remainder = divmod(index, num_eigenstates**3)
         j,remainder = divmod(remainder, num_eigenstates**2)
         k,l = divmod(remainder, num_eigenstates)
-        return components([i, j, k, l])
-    return Compact_Compact_Tensor(compact_compact_components)
+        return tensor[i, j, k, l]
+    return np.array([compact_compact_components(I) for I in compact_compact_eigenstates])
+
+def get_compact_compact_tensor_from_compact_tensor(compact_tensor):
+    def compact_compact_components(index):
+        I, J = divmod(index, num_eigenstates**2)
+        return compact_tensor[I, J]
+    return np.array([compact_compact_components(I) for I in compact_compact_eigenstates])
 
 
 def get_tensor_from_compact_compact_tensor(compact_compact_tensor):
-    compact_compact_components = compact_compact_tensor.components
     def components(multi_index):
         i, j, k, l = multi_index
-        return compact_compact_components((num_eigenstates**3 * i + 
-                                            num_eigenstates**2 * j + num_eigenstates * k + l))
-    return Tensor(components)
+        return compact_compact_tensor[num_eigenstates**3 * i + 
+                                            num_eigenstates**2 * j + num_eigenstates * k + l]
+    return np.array([[[[components([i,j,k,l]) for l in eigenstates]
+                                                for k in eigenstates]
+                                                    for j in eigenstates]
+                                                        for i in eigenstates])
 
 
 def get_compact_tensor_from_compact_compact_tensor(compact_compact_tensor):
-    compact_compact_components = compact_compact_tensor.components
     def compact_components(multi_index):
         I, J = multi_index
-        return compact_compact_components((num_eigenstates**2 * I + J))
-    return Compact_Tensor(compact_components)
+        return compact_compact_tensor[num_eigenstates**2 * I + J]
+    return np.array([[compact_components([I,J]) for J in compact_eigenstates]
+                                                    for I in compact_eigenstates])
 
-def get_compact_compact_tensor_from_compact_tensor(compact_tensor):
-    compact_components = compact_tensor.components
-    def compact_compact_components(index):
-        I, J = divmod(index, num_eigenstates**2)
-        return compact_components([I, J])
-    return Compact_Compact_Tensor(compact_compact_components)
+
 
 
 
