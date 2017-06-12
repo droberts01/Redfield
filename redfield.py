@@ -39,12 +39,15 @@ def compute_redfield_tensor(args):
 		return Jw(s_int)
 	start = time.time()
 	redfield_tensor_Qobj, eigenstates = bloch_redfield_tensor(hamiltonian, map(helper.Z, qubits), 
-																map(redfield_spectral_density, qubits), use_secular=True)
+																map(redfield_spectral_density, qubits), use_secular=False)
 
 	end = time.time()
 	print ("computed the raw redfield tensor with QuTip in {} seconds.".format(end-start))
 	start = time.time()
 	redfield_tensor_reals = np.real(redfield_tensor_Qobj.full())
+	eigenstates = np.array([np.real(eigenstate.full()) for eigenstate in eigenstates])
+	eigenstates = np.array([eigenstate[:,0] for eigenstate in eigenstates])
+	eigenstates = np.transpose(eigenstates)
 	end = time.time()
 	print ("unpacked the redfield tensor in {} seconds.".format(end-start))
 	def compact_tensor_components(multi_index):
@@ -94,9 +97,9 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 
 	Jws = Jw(s_int)
 	def G_plus(i,j,k,l):
-		return Jws(-W[j,l]) * sum(Z[:,i,k] * Z[:,j,l])
+		return Jws(-W[j,l]) * sum(Z[:,i,k] * Z[:,j,l])/2
 	def G_minus(i,j,k,l):
-		return Jws(W[i,k]) * sum(Z[:,i,k] * Z[:,j,l])
+		return Jws(W[i,k]) * sum(Z[:,i,k] * Z[:,j,l])/2
 
 	def tensor_components(i,j,k,l):
 		sum_G_plus_innk = sum([G_plus(i,n,n,k) for n in truncated_states])
@@ -114,7 +117,7 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 		part_one = helper.delta(j,l) * sum_G_plus_innk  + helper.delta(i,k) * sum_G_minus_jnnl
 		part_two = - G_plus(i,j,k,l) - G_minus(i,j,k,l)
 		return part_one + part_two
-	return np.array([[[[tensor_components(i,j,k,l) for l in truncated_states]
+	return np.array([[[[-tensor_components(i,j,k,l) for l in truncated_states]
 													for k in truncated_states]
 														for j in truncated_states]
 															for i in truncated_states])
@@ -160,8 +163,7 @@ def compute_diabatic_tensors(eigenstates):
 		bra = eigenstates[time_index + 1][i] + eigenstates[time_index - 1][i]
 		ket = eigenstates[time_index + 1][j] - eigenstates[time_index - 1][j]
 		time_step = list_of_t[time_index + 1] - list_of_t[time_index]
-		identity_matrix = identity(num_eigenstates)
-		return identity_matrix.matrix_element(bra, ket)/(4 * time_step)
+		return sum(bra[:] * ket[:])/(4 * time_step)
 
 	def tensor_component_function(time_index):
 		if time_index == 0 or time_index >= len(list_of_t)- 1:
