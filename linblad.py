@@ -57,7 +57,7 @@ list_of_linblads = map(helper.get_sum_tensors, zip(list_of_redfield_tensors, lis
 list_of_compact_linblads = map(helper.get_compact_compact_tensor_from_tensor, list_of_linblads)
 
 # Export array as csv
-np.savetxt("linblad.csv", list_of_compact_linblads, delimiter=",")
+np.savetxt("linblad.csv", [np.imag(linblad) for linblad in list_of_compact_linblads], delimiter=",")
 
 globalend = time.time()
 print ("linblad.py complete. process took {} seconds.".format(globalend-globalstart))

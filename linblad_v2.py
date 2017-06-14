@@ -28,7 +28,7 @@ globalstart = time.time()
 print ("computing hamiltonians...")
 start = time.time() 
 list_of_hamiltonians_Qobj = map(primitive.hamiltonian, list_of_s)
-list_of_hamiltonians = [np.real(hamiltonian.full()) for hamiltonian in list_of_hamiltonians_Qobj]
+list_of_hamiltonians = [hamiltonian.full() for hamiltonian in list_of_hamiltonians_Qobj]
 end = time.time()
 print ("computed hamiltonians in {} seconds.".format(end-start))
 
@@ -57,7 +57,7 @@ list_of_linblads = map(helper.get_sum_tensors, zip(list_of_redfield_tensors, lis
 list_of_compact_linblads = map(helper.get_compact_compact_tensor_from_tensor, list_of_linblads)
 
 # Export array as csv
-np.savetxt("linblad_v2.csv", list_of_compact_linblads, delimiter=",")
+np.savetxt("linblad_v2.csv", [ np.imag(linblad) for linblad in list_of_compact_linblads], delimiter=",")
 
 globalend = time.time()
 print ("linblad.py complete. process took {} seconds.".format(globalend-globalstart))

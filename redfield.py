@@ -44,16 +44,18 @@ def compute_redfield_tensor(args):
 	end = time.time()
 	print ("computed the raw redfield tensor with QuTip in {} seconds.".format(end-start))
 	start = time.time()
-	redfield_tensor_reals = np.real(redfield_tensor_Qobj.full())
-	eigenstates = np.array([np.real(eigenstate.full()) for eigenstate in eigenstates])
+	redfield_tensor_arrayform = redfield_tensor_Qobj.full()
+	# print (redfield_tensor_reals[:4,:4])
+	eigenstates = np.array([eigenstate.full() for eigenstate in eigenstates])
 	eigenstates = np.array([eigenstate[:,0] for eigenstate in eigenstates])
 	eigenstates = np.transpose(eigenstates)
 	end = time.time()
 	print ("unpacked the redfield tensor in {} seconds.".format(end-start))
 	def compact_tensor_components(multi_index):
 		I, J = multi_index
-		return redfield_tensor_reals[I][J]
+		return redfield_tensor_arrayform[I][J]
 	print ("reinitializing the tensor...")
+	# Truncation of R_I^J occurs here.
 	redfield_compact_tensor = np.array([[compact_tensor_components([I,J]) for J in compact_truncated_states]
 																			for I in compact_truncated_states])
 	print ("reshaping the tensor...")
@@ -103,20 +105,25 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 
 	def tensor_components(i,j,k,l):
 		sum_G_plus_innk = sum([G_plus(i,n,n,k) for n in truncated_states])
-		n = num_truncated_states
-		while np.abs(W[n,k]) < 10**11 and n < num_states - 1:
-			sum_G_plus_innk = sum_G_plus_innk + G_plus(i,n,n,k)
-			n = n + 1
-
 		sum_G_minus_jnnl = sum([G_plus(j,n,n,l) for n in truncated_states])
-		n = num_truncated_states
-		while np.abs(W[n,j]) < 10**11 and n < num_states - 1:
-			sum_G_minus_jnnl = sum_G_minus_jnnl + G_minus(j,n,n,l)
-			n = n + 1
+		if num_truncated_states == num_states:
+			part_one = helper.delta(j,l) * sum_G_plus_innk  + helper.delta(i,k) * sum_G_minus_jnnl
+			part_two = - G_plus(i,j,k,l) - G_minus(i,j,k,l)
+			return part_one + part_two
+		else:
+			n = num_truncated_states
+			while np.abs(W[n,k]) < 10**11 and n < num_states - 1:
+				sum_G_plus_innk = sum_G_plus_innk + G_plus(i,n,n,k)
+				n = n + 1
 
-		part_one = helper.delta(j,l) * sum_G_plus_innk  + helper.delta(i,k) * sum_G_minus_jnnl
-		part_two = - G_plus(i,j,k,l) - G_minus(i,j,k,l)
-		return part_one + part_two
+			n = num_truncated_states
+			while np.abs(W[n,j]) < 10**11 and n < num_states - 1:
+				sum_G_minus_jnnl = sum_G_minus_jnnl + G_minus(j,n,n,l)
+				n = n + 1
+
+			part_one = helper.delta(j,l) * sum_G_plus_innk  + helper.delta(i,k) * sum_G_minus_jnnl
+			part_two = - G_plus(i,j,k,l) - G_minus(i,j,k,l)
+			return part_one + part_two
 	return np.array([[[[-tensor_components(i,j,k,l) for l in truncated_states]
 													for k in truncated_states]
 														for j in truncated_states]
@@ -132,7 +139,9 @@ hbar = parameters.HBAR
 bath_coupling = parameters.BATH_COUPLING
 
 
-spectral_density_coefficient = [hbar**2 * bath_coupling(s) for s in list_of_s]
+# REMOVED FACTOR OF HBAR^2
+# spectral_density_coefficient = [hbar**2 * bath_coupling(s) for s in list_of_s]
+spectral_density_coefficient = [ bath_coupling(s) for s in list_of_s]
 exponential_coefficient = hbar / (boltzmann_constant * system_temperature)
 
 def Jw(s_int):
@@ -148,6 +157,8 @@ def Jw(s_int):
 			return spectral_density_coefficient[s_int] / exponential_coefficient
 	return spectral_density
 
+
+# print (Jw(1)(0))
 
 # 3. Define the diabatic tensor
 # The diabatic tensor M_ijkl is a term in the Linbladian which encodes diabatic transitions in the system.

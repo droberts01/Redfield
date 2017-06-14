@@ -17,7 +17,7 @@ MODE = "NASA"
 
 # Fundamental Constants in SI Units
 KB = 1.38065 *(10**(-23))
-HBAR = 6.62607*(10**(-34))
+HBAR = 1.0545718*(10**(-34))
 
 # Operating Parameters
 if MODE == "GOOGLE":
@@ -39,7 +39,7 @@ INITIAL_DENSITY_MATRIX[0][0] = 1
 
 
 # Defines discretization of Linblad ODE
-S_VALUES = np.arange(0,1,.5)
+S_VALUES = np.arange(.5,1.5,.5)
 LIST_OF_TIMES = [ANNEALING_TIME * s for s in S_VALUES]
 
 
