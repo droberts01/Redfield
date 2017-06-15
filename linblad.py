@@ -58,7 +58,8 @@ dim = parameters.NUM_STATES_CUTOFF
 list_of_compact_linblads = map(helper.get_compact_compact_tensor_from_tensor, zip(list_of_linblads, [dim]*len(list_of_s)))
 
 # Export array as csv
-np.savetxt("linblad.csv", [np.imag(linblad) for linblad in list_of_compact_linblads], delimiter=",")
+np.savetxt("linblad_imag.csv", [np.imag(linblad) for linblad in list_of_compact_linblads], delimiter=",")
+np.savetxt("linblad_real.csv", [np.real(linblad) for linblad in list_of_compact_linblads], delimiter=",")
 
 globalend = time.time()
 print ("linblad.py complete. process took {} seconds.".format(globalend-globalstart))

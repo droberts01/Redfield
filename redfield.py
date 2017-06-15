@@ -55,9 +55,19 @@ def compute_redfield_tensor(args):
 	# Truncation of R_I^J occurs here.
 	truncated_redfield_tensor = redfield_tensor[:num_truncated_states,:num_truncated_states,
 												:num_truncated_states,:num_truncated_states]
+
+
+	# NOTE: REDFIELD TENSOR IN QUTIP SATISFIES (Rqutip)_ij^kl = (Ractual)_ji^lk.
+	transposed_truncated_redfield_tensor = np.array([[[[truncated_redfield_tensor[j,i,l,k] 
+																	for l in truncated_states]
+																		for k in truncated_states]
+																			for j in truncated_states]
+																				for i in truncated_states])
+
 	# print("np.imag(truncated_redfield_tensor) is {}".format(np.imag(truncated_redfield_tensor)))
 	print ("finished running compute_redfield_tensor(). Starting a new process...")
-	return [truncated_redfield_tensor, eigenstates]
+	# return [truncated_redfield_tensor, eigenstates]
+	return [transposed_truncated_redfield_tensor, eigenstates]
 
 
 
