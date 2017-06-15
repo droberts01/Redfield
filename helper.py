@@ -94,51 +94,56 @@ def get_sum_compact_compact_tensors(list_of_compact_compact_tensors):
 
 
 # Utilizes formula R_ijkl = R_IJ, where I = Ni + j,  J = Nk + l
-def get_tensor_from_compact_tensor(compact_tensor):
+def get_tensor_from_compact_tensor(args):
+    compact_tensor, dim = args
     def components(multi_index):
         i, j, k, l = multi_index
-        I = num_eigenstates * i + j
-        J = num_eigenstates * k + l
+        I = dim * i + j
+        J = dim * k + l
         return compact_tensor[I, J]
-    return np.array([[[[components([i,j,k,l]) for l in eigenstates]
-                                                for k in eigenstates]
-                                                    for j in eigenstates]
-                                                        for i in eigenstates])
+    return np.array([[[[components([i,j,k,l]) for l in range(dim)]
+                                                for k in range(dim)]
+                                                    for j in range(dim)]
+                                                        for i in range(dim)])
 
 
 # Utilizes formula R_I = R_ijkl, where I = i N^3 + j N^2 + k N + l
-def get_compact_compact_tensor_from_tensor(tensor):
+def get_compact_compact_tensor_from_tensor(args):
+    tensor, dim = args
     def compact_compact_components(index):
-        i,remainder = divmod(index, num_eigenstates**3)
-        j,remainder = divmod(remainder, num_eigenstates**2)
-        k,l = divmod(remainder, num_eigenstates)
+        i,remainder = divmod(index, dim**3)
+        j,remainder = divmod(remainder, dim**2)
+        k,l = divmod(remainder, dim)
         return tensor[i, j, k, l]
-    return np.array([compact_compact_components(I) for I in compact_compact_eigenstates])
+    return np.array([compact_compact_components(I) for I in range(dim**4)])
 
-def get_compact_compact_tensor_from_compact_tensor(compact_tensor):
+def get_compact_compact_tensor_from_compact_tensor(args):
+    compact_tensor, dim = args
     def compact_compact_components(index):
-        I, J = divmod(index, num_eigenstates**2)
+        I, J = divmod(index, dim**2)
         return compact_tensor[I, J]
-    return np.array([compact_compact_components(I) for I in compact_compact_eigenstates])
+    return np.array([compact_compact_components(I) for I in range(dim**4)])
 
 
-def get_tensor_from_compact_compact_tensor(compact_compact_tensor):
+def get_tensor_from_compact_compact_tensor(args):
+    compact_compact_tensor, dim = args
     def components(multi_index):
         i, j, k, l = multi_index
-        return compact_compact_tensor[num_eigenstates**3 * i + 
-                                            num_eigenstates**2 * j + num_eigenstates * k + l]
-    return np.array([[[[components([i,j,k,l]) for l in eigenstates]
-                                                for k in eigenstates]
-                                                    for j in eigenstates]
-                                                        for i in eigenstates])
+        return compact_compact_tensor[dim**3 * i + 
+                                            dim**2 * j + dim * k + l]
+    return np.array([[[[components([i,j,k,l]) for l in range(dim)]
+                                                for k in range(dim)]
+                                                    for j in range(dim)]
+                                                        for i in range(dim)])
 
 
-def get_compact_tensor_from_compact_compact_tensor(compact_compact_tensor):
+def get_compact_tensor_from_compact_compact_tensor(args):
+    compact_compact_tensor, dim = args
     def compact_components(multi_index):
         I, J = multi_index
-        return compact_compact_tensor[num_eigenstates**2 * I + J]
-    return np.array([[compact_components([I,J]) for J in compact_eigenstates]
-                                                    for I in compact_eigenstates])
+        return compact_compact_tensor[dim**2 * I + J]
+    return np.array([[compact_components([I,J]) for J in range(dim**2)]
+                                                    for I in range(dim**2)])
 
 
 

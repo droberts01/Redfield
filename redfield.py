@@ -43,25 +43,21 @@ def compute_redfield_tensor(args):
 
 	end = time.time()
 	print ("computed the raw redfield tensor with QuTip in {} seconds.".format(end-start))
-	start = time.time()
-	redfield_tensor_arrayform = redfield_tensor_Qobj.full()
-	# print (redfield_tensor_reals[:4,:4])
+	redfield_compact_tensor = redfield_tensor_Qobj.full()
+
+	dim = num_states
+	redfield_tensor = helper.get_tensor_from_compact_tensor([redfield_compact_tensor, dim])
+	# print (np.imag(redfield_tensor_arrayform[:4,:4]))
 	eigenstates = np.array([eigenstate.full() for eigenstate in eigenstates])
 	eigenstates = np.array([eigenstate[:,0] for eigenstate in eigenstates])
 	eigenstates = np.transpose(eigenstates)
-	end = time.time()
-	print ("unpacked the redfield tensor in {} seconds.".format(end-start))
-	def compact_tensor_components(multi_index):
-		I, J = multi_index
-		return redfield_tensor_arrayform[I][J]
-	print ("reinitializing the tensor...")
+
 	# Truncation of R_I^J occurs here.
-	redfield_compact_tensor = np.array([[compact_tensor_components([I,J]) for J in compact_truncated_states]
-																			for I in compact_truncated_states])
-	print ("reshaping the tensor...")
-	redfield_tensor = helper.get_tensor_from_compact_tensor(redfield_compact_tensor)
+	truncated_redfield_tensor = redfield_tensor[:num_truncated_states,:num_truncated_states,
+												:num_truncated_states,:num_truncated_states]
+	# print("np.imag(truncated_redfield_tensor) is {}".format(np.imag(truncated_redfield_tensor)))
 	print ("finished running compute_redfield_tensor(). Starting a new process...")
-	return [redfield_tensor, eigenstates]
+	return [truncated_redfield_tensor, eigenstates]
 
 
 

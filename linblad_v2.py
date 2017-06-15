@@ -54,7 +54,8 @@ print ("computed diabatic tensors in {} seconds.".format(end-start))
 
 print ("constructing Linblads...")
 list_of_linblads = map(helper.get_sum_tensors, zip(list_of_redfield_tensors, list_of_diabatic_tensors))
-list_of_compact_linblads = map(helper.get_compact_compact_tensor_from_tensor, list_of_linblads)
+dim = parameters.NUM_STATES_CUTOFF
+list_of_compact_linblads = map(helper.get_compact_compact_tensor_from_tensor, zip(list_of_linblads, [dim]*len(list_of_s)))
 
 # Export array as csv
 np.savetxt("linblad_v2.csv", [ np.imag(linblad) for linblad in list_of_compact_linblads], delimiter=",")
