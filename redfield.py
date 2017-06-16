@@ -104,31 +104,31 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 	print("computed Z in {} seconds.".format(end-start))
 
 	Jws = Jw(s_int)
-	def G_plus(i,j,k,l):
-		return Jws(-W[j,l]) * sum(Z[:,i,k] * Z[:,j,l])/2
-	def G_minus(i,j,k,l):
-		return Jws(W[i,k]) * sum(Z[:,i,k] * Z[:,j,l])/2
+	def A_plus(i,j,k,l):
+		return Jws(W[k,i]) * sum(Z[:,i,k] * Z[:,j,l])/2
+	def A_minus(i,j,k,l):
+		return Jws(W[l,j]) * sum(Z[:,i,k] * Z[:,j,l])/2
 
 	def tensor_components(i,j,k,l):
-		sum_G_plus_innk = sum([G_plus(i,n,n,k) for n in truncated_states])
-		sum_G_minus_jnnl = sum([G_plus(j,n,n,l) for n in truncated_states])
+		sum_A_plus_nnki = sum([A_plus(n,n,k,i) for n in truncated_states])
+		sum_A_minus_nnjl = sum([A_plus(n,n,j,l) for n in truncated_states])
 		if num_truncated_states == num_states:
-			part_one = helper.delta(j,l) * sum_G_plus_innk  + helper.delta(i,k) * sum_G_minus_jnnl
-			part_two = - G_plus(i,j,k,l) - G_minus(i,j,k,l)
+			part_one = helper.delta(l,j) * sum_A_plus_nnki  + helper.delta(i,k) * sum_A_minus_nnjl
+			part_two = - A_plus(i,j,k,l) - A_minus(i,j,k,l)
 			return part_one + part_two
 		else:
 			n = num_truncated_states
-			while np.abs(W[n,k]) < 10**11 and n < num_states - 1:
-				sum_G_plus_innk = sum_G_plus_innk + G_plus(i,n,n,k)
+			while np.abs(W[k,n]) < 10**11 and n < num_states - 1:
+				sum_A_plus_nnki = sum_A_plus_nnki + A_plus(n,n,k,i)
 				n = n + 1
 
 			n = num_truncated_states
-			while np.abs(W[n,j]) < 10**11 and n < num_states - 1:
-				sum_G_minus_jnnl = sum_G_minus_jnnl + G_minus(j,n,n,l)
+			while np.abs(W[l,n]) < 10**11 and n < num_states - 1:
+				sum_A_minus_nnjl = sum_A_minus_nnjl + A_minus(n,n,j,l)
 				n = n + 1
 
-			part_one = helper.delta(j,l) * sum_G_plus_innk  + helper.delta(i,k) * sum_G_minus_jnnl
-			part_two = - G_plus(i,j,k,l) - G_minus(i,j,k,l)
+			part_one = helper.delta(l,j) * sum_A_plus_nnki  + helper.delta(i,k) * sum_A_minus_nnjl
+			part_two = - A_plus(i,j,k,l) - A_minus(i,j,k,l)
 			return part_one + part_two
 	return np.array([[[[-tensor_components(i,j,k,l) for l in truncated_states]
 													for k in truncated_states]
