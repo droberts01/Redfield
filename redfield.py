@@ -47,7 +47,6 @@ def compute_redfield_tensor(args):
 
 	dim = num_states
 	redfield_tensor = helper.get_tensor_from_compact_tensor([redfield_compact_tensor, dim])
-	# print (np.imag(redfield_tensor_arrayform[:4,:4]))
 	eigenstates = np.array([eigenstate.full() for eigenstate in eigenstates])
 	eigenstates = np.array([eigenstate[:,0] for eigenstate in eigenstates])
 	eigenstates = np.transpose(eigenstates)
@@ -64,9 +63,7 @@ def compute_redfield_tensor(args):
 																			for j in truncated_states]
 																				for i in truncated_states])
 
-	# print("np.imag(truncated_redfield_tensor) is {}".format(np.imag(truncated_redfield_tensor)))
 	print ("finished running compute_redfield_tensor(). Starting a new process...")
-	# return [truncated_redfield_tensor, eigenstates]
 	return [transposed_truncated_redfield_tensor, eigenstates]
 
 
@@ -101,41 +98,45 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 	Z = np.array([np.matmul(np.transpose(U), np.matmul(np.real(helper.Z(qubit).full()), U)) 
 																			for qubit in qubits])
 	end = time.time()
-	print("computed Z in {} seconds.".format(end-start))
+	print("computed matrix elements of interaction operators in {} seconds.".format(end-start))
 
 	Jws = Jw(s_int)
 	def A_plus(i,j,k,l):
-		return Jws(W[k,i]) * sum(Z[:,i,k] * Z[:,j,l])/2
+		return 0.5 * sum(Z[:,i,k] * Z[:,j,l]) * Jws(W[k,i])
 	def A_minus(i,j,k,l):
-		return Jws(W[l,j]) * sum(Z[:,i,k] * Z[:,j,l])/2
+		return 0.5 * sum(Z[:,i,k] * Z[:,j,l]) * Jws(W[l,j])
 
 	def tensor_components(i,j,k,l):
-		sum_A_plus_nnki = sum([A_plus(n,n,k,i) for n in truncated_states])
-		sum_A_minus_nnjl = sum([A_plus(n,n,j,l) for n in truncated_states])
-		if num_truncated_states == num_states:
-			part_one = helper.delta(l,j) * sum_A_plus_nnki  + helper.delta(i,k) * sum_A_minus_nnjl
-			part_two = - A_plus(i,j,k,l) - A_minus(i,j,k,l)
-			return part_one + part_two
-		else:
-			n = num_truncated_states
-			while np.abs(W[k,n]) < 10**11 and n < num_states - 1:
-				sum_A_plus_nnki = sum_A_plus_nnki + A_plus(n,n,k,i)
-				n = n + 1
+		output =  - A_plus(i,j,k,l) - A_minus(i,j,k,l)
+		if j == l:
+			sum_A_plus_nnki = sum([A_plus(n,n,k,i) for n in truncated_states])
+			if num_truncated_states < num_states:
+				n = num_truncated_states
+				while np.abs(W[k,n]) < 10**11 and n < num_states - 1:
+					sum_A_plus_nnki = sum_A_plus_nnki + A_plus(n,n,k,i)
+					n = n + 1
 
-			n = num_truncated_states
-			while np.abs(W[l,n]) < 10**11 and n < num_states - 1:
-				sum_A_minus_nnjl = sum_A_minus_nnjl + A_minus(n,n,j,l)
-				n = n + 1
+			output += sum_A_plus_nnki 
+		if i == k:
+			sum_A_minus_nnjl = sum([A_minus(n,n,j,l) for n in truncated_states])
+			if num_truncated_states < num_states:
+				n = num_truncated_states
+				while np.abs(W[l,n]) < 10**11 and n < num_states - 1:
+					sum_A_minus_nnjl = sum_A_minus_nnjl + A_minus(n,n,j,l)
+					n = n + 1
 
-			part_one = helper.delta(l,j) * sum_A_plus_nnki  + helper.delta(i,k) * sum_A_minus_nnjl
-			part_two = - A_plus(i,j,k,l) - A_minus(i,j,k,l)
-			return part_one + part_two
-	return np.array([[[[-tensor_components(i,j,k,l) for l in truncated_states]
-													for k in truncated_states]
-														for j in truncated_states]
-															for i in truncated_states])
+			output += sum_A_minus_nnjl
 
+		return output
 
+	start = time.time()
+	dissipative_part = np.array([[[[-tensor_components(i,j,k,l) for l in truncated_states]
+														for k in truncated_states]
+															for j in truncated_states]
+																for i in truncated_states])
+	end = time.time()
+	print("while loops ran in {} seconds. Starting a new process....".format(end-start))
+	return dissipative_part
 
 
 system_temperature = parameters.OPERATING_TEMPERATURE
@@ -164,7 +165,6 @@ def Jw(s_int):
 	return spectral_density
 
 
-# print (Jw(1)(0))
 
 # 3. Define the diabatic tensor
 # The diabatic tensor M_ijkl is a term in the Linbladian which encodes diabatic transitions in the system.
@@ -190,11 +190,10 @@ def compute_diabatic_tensors(eigenstates):
 		else:
 			def tensor_components(multi_index):
 				i, j, k, l = multi_index
-				return helper.delta(i, k)  *braket(l, j, time_index) + helper.delta(j, l) * braket(i, k, time_index)
+				return helper.delta(i, k)  *braket(l, j, time_index) + helper.delta(j, l) * braket(k, i, time_index)
 		return tensor_components
 
-	list_of_diabatic_component_functions = map(tensor_component_function, list_of_time_indices)
-	return [np.array([[[[list_of_diabatic_component_functions[time_index]([i,j,k,l]) 
+	return [np.array([[[[tensor_component_function(time_index)([i,j,k,l]) 
 																			for l in truncated_states]
 																				for k in truncated_states]
 																					for j in truncated_states]
