@@ -10,38 +10,39 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[      3720,        122]
-NotebookOptionsPosition[      3284,        103]
-NotebookOutlinePosition[      3637,        119]
-CellTagsIndexPosition[      3594,        116]
+NotebookDataLength[      3909,        126]
+NotebookOptionsPosition[      3509,        108]
+NotebookOutlinePosition[      3862,        124]
+CellTagsIndexPosition[      3819,        121]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
 Cell[BoxData[{
  RowBox[{
-  RowBox[{"rawData", "=", 
+  RowBox[{"VectorizedDensityMatrixReals", "=", 
    RowBox[{
-   "Import", "[", "\"\<~/LANLA/Redfield/redfield_simulation.csv\>\"", "]"}]}],
-   ";"}], "\[IndentingNewLine]", 
+   "Import", "[", "\"\<~/LANLA/Redfield/density_matrix_reals.csv\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"VectorizedDensityMatrixImags", "=", 
+   RowBox[{
+   "Import", "[", "\"\<~/LANLA/Redfield/density_matrix_imags.csv\>\"", 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"times", "=", 
    RowBox[{
-   "Import", "[", "\"\<~/LANLA/Redfield/redfield_simulation_times.csv\>\"", 
-    "]"}]}], ";"}]}], "Input",
+   "Import", "[", "\"\<~/LANLA/Redfield/simulation_times.csv\>\"", "]"}]}], 
+  ";"}]}], "Input",
  CellChangeTimes->{{3.7056856614087954`*^9, 3.705685667262673*^9}, {
-  3.705686098392778*^9, 3.705686102825474*^9}}],
+  3.705686098392778*^9, 3.705686102825474*^9}, {3.7066659705128813`*^9, 
+  3.706665971149315*^9}, {3.706666059187768*^9, 3.706666089639615*^9}, {
+  3.7066661711472683`*^9, 3.706666185204082*^9}}],
 
-Cell[BoxData[
+Cell[BoxData[{
  RowBox[{
-  RowBox[{"numStatesCutoff", " ", "=", " ", 
-   SqrtBox[
-    RowBox[{"Length", "[", 
-     RowBox[{"data", "[", 
-      RowBox[{"[", "1", "]"}], "]"}], "]"}]]}], ";"}]], "Input",
- CellChangeTimes->{{3.705685753032645*^9, 3.705685772304784*^9}}],
-
-Cell[BoxData[
+  RowBox[{"numStatesCutoff", " ", "=", " ", "4"}], 
+  ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{
    RowBox[{"VectorToMatrix", "[", "vector_", "]"}], ":=", 
@@ -60,21 +61,25 @@ Cell[BoxData[
      RowBox[{"{", 
       RowBox[{"j", ",", "0", ",", 
        RowBox[{"numStatesCutoff", "-", "1"}]}], "}"}]}], "]"}]}], 
-  ";"}]], "Input",
- CellChangeTimes->{{3.705685580143704*^9, 3.705685614046767*^9}, {
-  3.7056856752162952`*^9, 3.7056856886782713`*^9}, {3.705685740944682*^9, 
-  3.705685745933956*^9}, {3.7056857892774*^9, 3.705685803379184*^9}, {
-  3.7056858668024387`*^9, 3.705685884792364*^9}, {3.7056859235454903`*^9, 
-  3.7056859406637907`*^9}, {3.705686047059073*^9, 3.7056860831450653`*^9}}],
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.705685753032645*^9, 3.705685772304784*^9}, {
+  3.706666120783945*^9, 3.706666128771446*^9}}],
 
-Cell[BoxData[
+Cell[BoxData[{
  RowBox[{
-  RowBox[{"data", " ", "=", " ", 
+  RowBox[{"densityMatrixReals", " ", "=", " ", 
    RowBox[{
     RowBox[{
-     RowBox[{"VectorToMatrix", "[", "#", "]"}], "&"}], "/@", "rawData"}]}], 
-  ";"}]], "Input",
- CellChangeTimes->{{3.705686091521565*^9, 3.705686114440435*^9}}],
+     RowBox[{"VectorToMatrix", "[", "#", "]"}], "&"}], "/@", 
+    "VectorizedDensityMatrixReals"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"densityMatrixImags", "=", " ", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"VectorToMatrix", "[", "#", "]"}], "&"}], "/@", 
+    "VectorizedDensityMatrixImags"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.705686091521565*^9, 3.705686114440435*^9}, {
+  3.706666158941021*^9, 3.706666201380638*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -101,8 +106,8 @@ Cell[BoxData[
  CellChangeTimes->{{3.705686088205646*^9, 3.7056860897214937`*^9}, {
   3.7056862144282103`*^9, 3.70568625019873*^9}}]
 },
-WindowSize->{1432, 765},
-WindowMargins->{{3, Automatic}, {Automatic, 2}},
+WindowSize->{1192, 773},
+WindowMargins->{{3, Automatic}, {Automatic, 0}},
 FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
 2014)",
 StyleDefinitions->"Default.nb"
@@ -118,12 +123,11 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 448, 12, 69, "Input"],
-Cell[1009, 34, 266, 7, 59, "Input"],
-Cell[1278, 43, 975, 24, 69, "Input"],
-Cell[2256, 69, 244, 7, 43, "Input"],
-Cell[2503, 78, 415, 12, 44, "Input"],
-Cell[2921, 92, 359, 9, 43, "Input"]
+Cell[558, 20, 795, 19, 94, "Input"],
+Cell[1356, 41, 823, 24, 94, "Input"],
+Cell[2182, 67, 543, 14, 69, "Input"],
+Cell[2728, 83, 415, 12, 44, "Input"],
+Cell[3146, 97, 359, 9, 43, "Input"]
 }
 ]
 *)
