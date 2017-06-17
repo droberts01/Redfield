@@ -22,10 +22,9 @@ time_indices = range(len(list_of_t))
 initial_density_matrix = helper.vectorize(parameters.INITIAL_DENSITY_MATRIX)
 
 
-list_of_linblads_reals = np.loadtxt('linblad_real_v2.csv', delimiter=",")
-list_of_linblads_imags = np.loadtxt('linblad_imag_v2.csv', delimiter=",")
+list_of_linblads_reals = np.loadtxt('data/linblad_real_v2.csv', delimiter=",")
+list_of_linblads_imags = np.loadtxt('data/linblad_imag_v2.csv', delimiter=",")
 
-# print ("list_of_linblads_reals is {}".format(list_of_linblads_reals))
 
 list_of_linblads = np.array([linblad[0] + 1j * linblad[1] for linblad in 
 									zip(list_of_linblads_reals, list_of_linblads_imags)])
@@ -43,21 +42,22 @@ for time_index in time_indices:
 		pass
 	else:
 		time_step = list_of_t[time_index] - list_of_t[time_index - 1]
-		if time_index < 300:
+		if time_index < 150:
 			print("time_index is {}".format(time_index))
-			print("output_evolution[time_index - 1] is {}".format(output_evolution[time_index - 1]))
+			print("output_evolution[time_index-1] is {}".format(output_evolution[time_index-1]))
 		incremental_evolution = time_step * np.matmul(linblad_operators[time_index - 1], 
 												output_evolution[time_index - 1])
 		output_evolution[time_index] = output_evolution[time_index - 1] + incremental_evolution 
+			
 
 
 output_evolution_reals = np.array(map(np.real, output_evolution))
 output_evolution_imags = np.array(map(np.imag, output_evolution))
 
-np.savetxt("density_matrix_reals.csv", output_evolution_reals, delimiter=",")
-np.savetxt("density_matrix_imags.csv", output_evolution_imags, delimiter=",")
+np.savetxt("/Users/Droberts/Documents/LANLA/Redfield/data/density_matrix_reals.csv", output_evolution_reals, delimiter=",")
+np.savetxt("/Users/Droberts/Documents/LANLA/Redfield/data/density_matrix_imags.csv", output_evolution_imags, delimiter=",")
 
-np.savetxt("simulation_times.csv", list_of_t, delimiter=",")
+np.savetxt("/Users/Droberts/Documents/LANLA/Redfield/data/simulation_times.csv", list_of_t, delimiter=",")
 
 
 

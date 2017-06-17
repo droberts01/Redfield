@@ -1,3 +1,4 @@
+
 """
 Original Developer: David Roberts
 Purpose of Module: provides functions to construct the Linbladian in linblad.py,
@@ -75,7 +76,7 @@ def compute_redfield_tensor_v2(args):
 	start = time.time()
 	eigenvalues, eigenstates = np.linalg.eigh(hamiltonian)
 	end = time.time()
-	print ("spectral decomposition of hamiltonian computed in {} seconds.".format(end-start))
+	# print ("spectral decomposition of hamiltonian computed in {} seconds.".format(end-start))
 	system_part = compute_system_part(eigenvalues)
 	dissipative_part = compute_dissipative_part(eigenstates, eigenvalues, s_int)
 	redfield_tensor = helper.get_sum_tensors([system_part, dissipative_part]) #make sure sign is neg. on dissipative part
@@ -98,7 +99,7 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 	Z = np.array([np.matmul(np.transpose(U), np.matmul(np.real(helper.Z(qubit).full()), U)) 
 																			for qubit in qubits])
 	end = time.time()
-	print("computed matrix elements of interaction operators in {} seconds.".format(end-start))
+	# print("computed matrix elements of interaction operators in {} seconds.".format(end-start))
 
 	Jws = Jw(s_int)
 	def A_plus(i,j,k,l):
@@ -129,13 +130,13 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 
 		return output
 
-	start = time.time()
+	# start = time.time()
 	dissipative_part = np.array([[[[-tensor_components(i,j,k,l) for l in truncated_states]
 														for k in truncated_states]
 															for j in truncated_states]
 																for i in truncated_states])
-	end = time.time()
-	print("while loops ran in {} seconds. Starting a new process....".format(end-start))
+	# end = time.time()
+	# print("while loops ran in {} seconds. Starting a new process....".format(end-start))
 	return dissipative_part
 
 

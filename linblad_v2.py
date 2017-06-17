@@ -9,6 +9,8 @@ Last Modification Purpose: Created module
 # Standard Modules:
 from qutip import *
 import numpy as np
+from multiprocessing import Pool
+import tqdm
 
 # Custom Modules:
 import parameters
@@ -36,11 +38,13 @@ print ("computed hamiltonians in {} seconds.".format(end-start))
 print ("computing redfield tensors...")
 start = time.time() 
 # list_of_redfield_output = map(redfield.compute_redfield_tensor, zip(list_of_s, list_of_hamiltonians_Qobj))
-list_of_redfield_output = map(redfield.compute_redfield_tensor_v2, zip(list_of_s, list_of_hamiltonians))
-end = time.time()
-print ("computed redfield tensors in {} seconds.".format(end-start))
-print ("unpacking redfield output...")
+pool = Pool(processes=8)
+list_of_redfield_output = pool.imap_unordered(redfield.compute_redfield_tensor_v2, tqdm.tqdm(zip(list_of_s, list_of_hamiltonians)))
+
 list_of_redfield_tensors, list_of_eigenstates = zip(*list_of_redfield_output)
+end = time.time()
+
+print ("computed redfield tensors in {} seconds.".format(end-start))
 
 
 print ("truncacting eigenstates...")
@@ -64,11 +68,12 @@ list_of_compact_linblads = map(helper.get_compact_compact_tensor_from_tensor,
 list_of_compact_linblads_reals = np.array(map(np.real, list_of_compact_linblads))
 list_of_compact_linblads_imags = np.array(map(np.imag, list_of_compact_linblads))
 
-np.savetxt("linblad_real_v2.csv", list_of_compact_linblads_reals, delimiter=",")
-np.savetxt("linblad_imag_v2.csv", list_of_compact_linblads_imags, delimiter=",")
+np.savetxt('/Users/Droberts/Documents/LANLA/Redfield/data/linblad_real_v2.csv', list_of_compact_linblads_reals, delimiter=",")
+np.savetxt('/Users/Droberts/Documents/LANLA/Redfield/data/linblad_imag_v2.csv', list_of_compact_linblads_imags, delimiter=",")
+
 
 globalend = time.time()
-print ("linblad.py complete. process took {} seconds.".format(globalend-globalstart))
+print ("linblad_v2.py complete. process took {} seconds.".format(globalend-globalstart))
 
 
 

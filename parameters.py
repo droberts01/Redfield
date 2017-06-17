@@ -7,8 +7,9 @@ Last Modification Purpose: Created module
 """
 
 # Standard Modules:
-import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import os
 
 # Specifies mode of operation
 # MODE = "LANL"
@@ -21,9 +22,9 @@ HBAR = 1.0545718*(10**(-34))
 
 # Operating Parameters
 if MODE == "GOOGLE":
-	ANNEALING_SCHEDULE = pd.read_csv('~/Documents/LANLA/DWaveAnnealingSchedule_Google.csv', sep=',',header=None)
+	ANNEALING_SCHEDULE = np.transpose(np.loadtxt('data/DWaveAnnealingSchedule_Google.csv', delimiter=','))
 elif MODE == "NASA":
-	ANNEALING_SCHEDULE = pd.read_csv('~/Documents/LANLA/DWaveAnnealingSchedule.csv', sep=',',header=None)
+	ANNEALING_SCHEDULE = np.transpose(np.loadtxt('data/DWaveAnnealingSchedule.csv', delimiter=','))
 else:
 	print "ERR"
 
@@ -39,19 +40,40 @@ INITIAL_DENSITY_MATRIX[0][0] = 1
 
 
 # Defines discretization of Linblad ODE
-S_VALUES = np.arange(0,1,.001)
+S_VALUES = np.arange(0,1,.0001)
 LIST_OF_TIMES = [ANNEALING_TIME * s for s in S_VALUES]
 
 
 def A(s):
-	s_int = max(int(round(len(ANNEALING_PARAMETER) * s)) - 1, 0)
-	return DRIVER_COEFFICIENT[s_int]
+	s_rescaled = len(ANNEALING_PARAMETER) * s
+	s_low = max(int(np.floor(s_rescaled)) - 1, 0)
+	s_high = max(int(np.ceil(s_rescaled)) - 1, 0)
+	if s_low == s_high:
+		return DRIVER_COEFFICIENT[s_low]
+	elif s_high == len(ANNEALING_PARAMETER):
+		return DRIVER_COEFFICIENT[-1]
+	else:
+		return DRIVER_COEFFICIENT[s_low] + (s_rescaled - s_low)/(s_high - s_low) * (DRIVER_COEFFICIENT[s_high] - DRIVER_COEFFICIENT[s_low])
 
 def B(s):
-	s_int = max(int(round(len(ANNEALING_PARAMETER) * s)) - 1, 0)
-	return PROBLEM_COEFFICIENT[s_int]
+	s_rescaled = len(ANNEALING_PARAMETER) * s
+	s_low = max(int(np.floor(s_rescaled)) - 1, 0)
+	s_high = max(int(np.ceil(s_rescaled)) - 1, 0)
+	if s_low == s_high:
+		return PROBLEM_COEFFICIENT[s_low]
+	elif s_high == len(ANNEALING_PARAMETER):
+		return PROBLEM_COEFFICIENT[-1]
+	else:
+		return PROBLEM_COEFFICIENT[s_low] + (s_rescaled - s_low)/(s_high - s_low) * (PROBLEM_COEFFICIENT[s_high] - PROBLEM_COEFFICIENT[s_low])
 
 
+# x = ANNEALING_PARAMETER
+# y1 = map(A, ANNEALING_PARAMETER)
+# y2 = map(B, ANNEALING_PARAMETER)
+
+# plt.plot(x,y1,x,y2)
+# plt.grid(True)
+# plt.show()
 
 
 def BATH_COUPLING(s):

@@ -64,8 +64,9 @@ list_of_compact_linblads = map(helper.get_compact_compact_tensor_from_tensor,
 list_of_compact_linblads_reals = np.array(map(np.real, list_of_compact_linblads))
 list_of_compact_linblads_imags = np.array(map(np.imag, list_of_compact_linblads))
 
-np.savetxt("linblad_real.csv", list_of_compact_linblads_reals, delimiter=",")
-np.savetxt("linblad_imag.csv", list_of_compact_linblads_imags, delimiter=",")
+
+np.savetxt('/Users/Droberts/Documents/LANLA/Redfield/data/linblad_real.csv', list_of_compact_linblads_reals, delimiter=",")
+np.savetxt('/Users/Droberts/Documents/LANLA/Redfield/data/linblad_imag.csv', list_of_compact_linblads_imags, delimiter=",")
 
 globalend = time.time()
 print ("linblad.py complete. process took {} seconds.".format(globalend-globalstart))
