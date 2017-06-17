@@ -26,30 +26,30 @@ qubits = range(num_qubits)
 num_eigenstates = parameters.NUM_STATES_CUTOFF
 eigenstates = range(num_eigenstates)
 
-class Tensor:
-    def __init__(self, components):
-        self.array = np.array([[[[components([i,j,k,l]) for l in eigenstates] 
-                                                                for k in eigenstates] 
-                                                                    for j in eigenstates] 
-                                                                        for i in eigenstates])
+# class Tensor:
+#     def __init__(self, components):
+#         self.array = np.array([[[[components([i,j,k,l]) for l in eigenstates] 
+#                                                                 for k in eigenstates] 
+#                                                                     for j in eigenstates] 
+#                                                                         for i in eigenstates])
 
-        self.components = components
-
-
+#         self.components = components
 
 
-# Vectorized tensor, a.k.a. superoperator
+
+
+# # Vectorized tensor, a.k.a. superoperator
 
 
 num_compact_eigenstates = num_eigenstates**2
 compact_eigenstates = range(num_compact_eigenstates)
 
 
-class Compact_Tensor:
-    def __init__(self, components):
-        self.array = np.array([[components([I,J]) for J in compact_eigenstates] 
-                                                                for I in compact_eigenstates])
-        self.components = components
+# class Compact_Tensor:
+#     def __init__(self, components):
+#         self.array = np.array([[components([I,J]) for J in compact_eigenstates] 
+#                                                     for I in compact_eigenstates])
+#         self.components = components
 
 
 
@@ -59,16 +59,16 @@ num_compact_compact_eigenstates = num_compact_eigenstates**2
 compact_compact_eigenstates = range(num_compact_compact_eigenstates)
 
 
-class Compact_Compact_Tensor:
-    def __init__(self, components):
-        self.array = np.array([components(I) for I in compact_compact_eigenstates])
-        self.components = components
+# class Compact_Compact_Tensor:
+#     def __init__(self, components):
+#         self.array = np.array([components(I) for I in compact_compact_eigenstates])
+#         self.components = components
 
 
-def init_compact_compact_tensor_from_array(array):
-    def compact_compact_components(index):
-        return array[index]
-    return Compact_Compact_Tensor(compact_compact_components)
+# def init_compact_compact_tensor_from_array(array):
+#     def compact_compact_components(index):
+#         return array[index]
+#     return Compact_Compact_Tensor(compact_compact_components)
 
 
 
@@ -147,6 +147,12 @@ def get_compact_tensor_from_compact_compact_tensor(args):
 
 
 
+def vectorize(matrix):
+    dim = parameters.NUM_STATES_CUTOFF
+    def components(index):
+        i, j = divmod(index, dim)
+        return matrix[i,j]
+    return np.array([components(I) for I in range(dim**2)])
 
 
 

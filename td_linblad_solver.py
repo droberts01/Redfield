@@ -20,16 +20,23 @@ import helper
 # Load parameters
 list_of_t = parameters.LIST_OF_TIMES
 time_indices = range(len(list_of_t))
-initial_density_matrix = parameters.INITIAL_DENSITY_MATRIX
+initial_density_matrix = helper.vectorize(parameters.INITIAL_DENSITY_MATRIX)
 
 
-list_of_linblads_csv = pd.read_csv('linblad.csv', sep=',',header=None)
-list_of_linblads = map(helper.init_compact_compact_tensor_from_array, list_of_linblads_csv)
-list_of_linblad_operators = map(helper.get_compact_tensor_from_compact_compact_tensor, list_of_linblads)
-linblad_operators = [linblad.array for linblad in list_of_linblad_operators]
+list_of_linblads_reals = pd.read_csv('linblad_real_v2.csv', sep=',',header=None)
+list_of_linblads_imags = pd.read_csv('linblad_imag_v2.csv', sep=',',header=None)
+
+
+dim = parameters.NUM_STATES_CUTOFF
+list_of_linblads = np.array([linblad[0] + 1j * linblad[1] for linblad in 
+									zip(list_of_linblads_reals, list_of_linblads_imags)])
+
+linblad_operators = map(helper.get_compact_tensor_from_compact_compact_tensor,
+										list_of_linblads)
 
 
 output_evolution = initial_density_matrix*len(time_indices)
+
 for time_index in time_indices:
 	if time_index == 0:
 		pass
@@ -39,8 +46,13 @@ for time_index in time_indices:
 												output_evolution[time_index - 1])
 		output_evolution[time_index] = output_evolution[time_index - 1] + incremental_evolution 
 
-output_evolution = np.array(output_evolution)
-np.savetxt("redfield_simulation.csv", output_evolution, delimiter=",")
+
+output_evolution_reals = np.array(map(np.real, output_evolution))
+output_evolution_imags = np.array(map(np.imag, output_evolution))
+
+np.savetxt("redfield_simulation_real.csv", output_evolution_reals, delimiter=",")
+np.savetxt("redfield_simulation_imag.csv", output_evolution_imags, delimiter=",")
+
 np.savetxt("redfield_simulation_times.csv", list_of_t, delimiter=",")
 
 
