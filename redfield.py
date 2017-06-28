@@ -1,8 +1,12 @@
-
 """
 Original Developer: David Roberts
 Purpose of Module: provides functions to construct the Linbladian in linblad.py,
-according to Redfield approximation
+according to Redfield approximation.
+
+Reference: Role of Single Qubit Decoherence Time in Adiabatic Quantum Computation
+M. H. S. Amin,1 C. J. S. Truncik,1 and D. V. Averin2 (2009)
+
+
 Last Modified: 6/5/17
 Last Modified By: David Roberts
 Last Modification Purpose: Created module
@@ -75,6 +79,7 @@ def compute_redfield_tensor_v2(args):
 	s_int = max(int(round(len(list_of_s) * s)) - 1, 0)
 	start = time.time()
 	eigenvalues, eigenstates = np.linalg.eigh(hamiltonian)
+	# print (eigenvalues)
 	end = time.time()
 	# print ("spectral decomposition of hamiltonian computed in {} seconds.".format(end-start))
 	system_part = compute_system_part(eigenvalues)
@@ -111,20 +116,20 @@ def compute_dissipative_part(eigenstates, eigenvalues, s_int):
 		output =  - A_plus(i,j,k,l) - A_minus(i,j,k,l)
 		if j == l:
 			sum_A_plus_nnki = sum([A_plus(n,n,k,i) for n in truncated_states])
-			if num_truncated_states < num_states:
-				n = num_truncated_states
-				while np.abs(W[k,n]) < 10**11 and n < num_states - 1:
-					sum_A_plus_nnki = sum_A_plus_nnki + A_plus(n,n,k,i)
-					n = n + 1
+			# if num_truncated_states < num_states:
+			# 	n = num_truncated_states
+			# 	while np.abs(W[k,n]) < 10**11 and n < num_states - 1:
+			# 		sum_A_plus_nnki += A_plus(n,n,k,i)
+			# 		n = n + 1
 
 			output += sum_A_plus_nnki 
 		if i == k:
 			sum_A_minus_nnjl = sum([A_minus(n,n,j,l) for n in truncated_states])
-			if num_truncated_states < num_states:
-				n = num_truncated_states
-				while np.abs(W[l,n]) < 10**11 and n < num_states - 1:
-					sum_A_minus_nnjl = sum_A_minus_nnjl + A_minus(n,n,j,l)
-					n = n + 1
+			# if num_truncated_states < num_states:
+			# 	n = num_truncated_states
+			# 	while np.abs(W[l,n]) < 10**11 and n < num_states - 1:
+			# 		sum_A_minus_nnjl += A_minus(n,n,j,l)
+			# 		n = n + 1
 
 			output += sum_A_minus_nnjl
 
@@ -150,7 +155,7 @@ bath_coupling = parameters.BATH_COUPLING
 # REMOVED FACTOR OF HBAR^2
 # spectral_density_coefficient = [hbar**2 * bath_coupling(s) for s in list_of_s]
 spectral_density_coefficient = [ bath_coupling(s) for s in list_of_s]
-exponential_coefficient = hbar / (boltzmann_constant * system_temperature)
+beta = hbar / (boltzmann_constant * system_temperature)
 
 def Jw(s_int):
 	def spectral_density(frequency):
@@ -159,10 +164,10 @@ def Jw(s_int):
 		if abs(frequency) > 10**11: #Prevent numerical overflow of np.exp() - 100 GHz cutoff
 			return 0.0
 		elif frequency != 0:
-			denominator = 1 - np.exp(-exponential_coefficient*frequency)
+			denominator = 1 - np.exp(-beta*frequency)
 			return numerator / denominator
 		else:
-			return spectral_density_coefficient[s_int] / exponential_coefficient
+			return spectral_density_coefficient[s_int] / beta
 	return spectral_density
 
 
@@ -176,29 +181,32 @@ list_of_t = parameters.LIST_OF_TIMES
 list_of_time_indices = range(len(list_of_t))
 
 
-def compute_diabatic_tensors(eigenstates):
-	def braket(i, j, time_index):
-		bra = eigenstates[time_index + 1][i] + eigenstates[time_index - 1][i]
-		ket = eigenstates[time_index + 1][j] - eigenstates[time_index - 1][j]
-		time_step = list_of_t[time_index + 1] - list_of_t[time_index]
-		return sum(bra[:] * ket[:])/(4 * time_step)
+def compute_diabatic_tensors(args):
+	ekets_n, dt_n, n = args
+	ekets_nm1, ekets_np1 = ekets_n
+	time_index = n
+	def braket(i, j):
+		bra = ekets_np1[i] + ekets_nm1[i]
+		ket = ekets_np1[j] - ekets_nm1[j]
+		# time_step = list_of_t[time_index + 1] - list_of_t[time_index]
+		return sum(bra[:] * ket[:])/(4 * dt_n)
 
-	def tensor_component_function(time_index):
-		if time_index == 0 or time_index >= len(list_of_t)- 1:
-			def tensor_components(multi_index):
-				i, j, k, l = multi_index
-				return 0
-		else:
-			def tensor_components(multi_index):
-				i, j, k, l = multi_index
-				return helper.delta(i, k)  *braket(l, j, time_index) + helper.delta(j, l) * braket(k, i, time_index)
-		return tensor_components
+	# # WARNING: DEBUGGING PURPOSES ONLY
+	# if True:
+	if time_index == 0 or time_index >= len(list_of_t)- 1:
+		def tensor_components(multi_index):
+			i, j, k, l = multi_index
+			return 0
+	else:
+		def tensor_components(multi_index):
+			i, j, k, l = multi_index
+			return (helper.delta(i, k) * braket(l, j) 
+						+ helper.delta(j, l) * braket(k, i))
 
-	return [np.array([[[[tensor_component_function(time_index)([i,j,k,l]) 
-																			for l in truncated_states]
-																				for k in truncated_states]
-																					for j in truncated_states]
-																						for i in truncated_states])
-																							for time_index in list_of_time_indices]
+	return np.array([[[[tensor_components([i,j,k,l]) 
+											for l in truncated_states]
+												for k in truncated_states]
+													for j in truncated_states]
+														for i in truncated_states])
 
 

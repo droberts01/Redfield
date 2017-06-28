@@ -11,6 +11,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+
+ROOT_FILEPATH = "/Users/Droberts/Dropbox/Redfield Annealing/data/"
+
+
 # Specifies mode of operation
 # MODE = "LANL"
 MODE = "NASA"
@@ -34,14 +38,17 @@ DRIVER_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[
 PROBLEM_COEFFICIENT = [(10**9)*coefficient for coefficient in ANNEALING_SCHEDULE[2]]
 BATH_COUPLING_MRT = 0.24
 BATH_CUTOFF_TIME = 10**(-12)
-NUM_STATES_CUTOFF = 4
+NUM_STATES_CUTOFF = 8
 INITIAL_DENSITY_MATRIX = np.array([[0]*NUM_STATES_CUTOFF]*NUM_STATES_CUTOFF)
 INITIAL_DENSITY_MATRIX[0][0] = 1
 
 
 # Defines discretization of Linblad ODE
-S_VALUES = np.arange(0,1,.0001)
+S_VALUES = np.arange(0,1, 2*(10**(-4)))
 LIST_OF_TIMES = [ANNEALING_TIME * s for s in S_VALUES]
+DT = LIST_OF_TIMES[1]-LIST_OF_TIMES[0]
+
+
 
 
 def A(s):
@@ -105,6 +112,22 @@ elif MODE == "NASA":
 	NUM_QUBITS = 6
 	OPERATING_TEMPERATURE = 15.5*(10**(-3))
 	NUM_STATES = 2**NUM_QUBITS
+
+	T = OPERATING_TEMPERATURE
+	tQA = ANNEALING_TIME
+	N = NUM_QUBITS
+	N_c = NUM_STATES_CUTOFF
+	dt = TIME_STEP = (LIST_OF_TIMES[2] - LIST_OF_TIMES[0])/2
+	# GAMMA = 2 - np.sqrt(2)
+
+	# for j in range(len(LIST_OF_TIMES)):
+	# 	if j % 2 == 1:
+	# 		LIST_OF_TIMES[j] = LIST_OF_TIMES[j - 1] + 2 * GAMMA * DT
+
+
+	FILENAME = 'T='+str(T)+'___tQA='+str(tQA)+'___N='+str(N)+'___[I,J,K]='+str([I,J,K])+'___N_c='+str(N_c)+'___dt='+str(dt)+'___'
+
+
 else:
 	print "ERR"
 
