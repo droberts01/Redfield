@@ -87,7 +87,6 @@ def generate_hamiltonian(sval, H_args):
 
 	return 2 * np.pi * (meta.A(sval)/2 * H_D + meta.B(sval)/2 * H_P)
 
-# print(generate_hamiltonian(.32, [.2, .3, 1, 5])[:4,:4])
 
 
 def get_index(ordered_list, val):
@@ -115,9 +114,6 @@ def generate_discretization(tQA, H_args, N_args_1):
 		gamma_vals = map(lambda s: meta.A(s)/meta.B(s), svals)
 		b_index = get_index(gamma_vals, gamma_b)
 		s_b = svals[b_index]
-		# print(gamma_b)
-		# print(gamma_vals)
-		# print(b_index)
 
 		# Solve for minimum gap
 		num = J**2 - I**2
@@ -176,8 +172,6 @@ def generate_discretization(tQA, H_args, N_args_1):
 		# print(svals)
 	return svals, bad_svals, tvals
 
-# print(generate_discretization(5*10**(-6), [.2, .23, 1, 5], [.1, .2, 20])[0][24:27])
-# print(generate_discretization(5*10**(-6), [.2, .3, 1, 8], [.01, 5, 20000])[1])
 
 # Noise spectral density of the qubits in the 
 # D Wave 2X quantum annealer
@@ -197,6 +191,14 @@ def S(sval):
 		else:
 			return td_bath_coupling(sval) / meta.BETA
 	return S_func
+
+
+# Tests of generate_hamiltonian()
+# print(generate_hamiltonian(.32, [.2, .3, 1, 5])[:4,:4])
+
+# Tests of generate_discretization()
+# print(generate_discretization(5*10**(-6), [.2, .23, 1, 5], [.1, .2, 20])[0][24:27])
+# print(generate_discretization(5*10**(-6), [.2, .3, 1, 8], [.01, 5, 20000])[1])
 
 # Test of S()
 # S_func = S(1)

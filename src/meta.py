@@ -8,6 +8,7 @@ import numpy as np
 
 # Detect local directory
 ROOT = os.path.dirname(os.path.realpath(__file__))
+SAVE_LOCATION = '~/Dropbox/Dissipative Ferromagnets/Redfield_data/'
 
 # Detect local parallelization resources
 CPU_COUNT = multiprocessing.cpu_count()

@@ -74,19 +74,8 @@ def R(evals, ekets, sval, N, Nc):
 					np.transpose(unitary), 
 					np.matmul(meta_functions.Z(q, N), unitary)
 							) for q in range(N)])
-	# Z = np.array([[[np.dot(ekets[:,j], 
-	# 						np.matmul(meta_functions.Z(q, N), 
-	# 													ekets[:,i]
-	# 									)
-	# 					) for i in range(Nc)] for j in range(Nc)] for q in range(N)]
-	# 			)
 	end = time()
 	print("computed matrix elements of Z in {} seconds.".format(end-start))
-
-	# print(unitary[:,0])
-	# print(unitary[:,1])
-	# print(Z[3,:4,:4])
-	# print(Z[3,:4,:4])
 
 	# Evaluate time-dependent noise spectral density
 	S = meta_functions.S(sval)
@@ -115,46 +104,17 @@ def R(evals, ekets, sval, N, Nc):
 												for i in range(Nc)])
 
 
-# Test of R().
-# print("running...")
-# s = 0.524
-# N = 8
-# I = 0.3
-# J = 0.9
-# K = 1.4
-# Nc = 3
-# start = time()
-# hamiltonian_now = meta_functions.generate_hamiltonian(s, [I, J, K, N])
-# evals_now, ekets_now = linalg.eigh(hamiltonian_now)
-# end = time()
-# print("generated and diagonalized hamiltonian in {} seconds.".format(end-start))
-
-# start = time()
-# Routput = R(evals_now, ekets_now, s, N, Nc)
-# end = time()
-# print("R() ran in {} seconds.".format(end-start))
-
-# for i in range(Nc):
-# 	for j in range(Nc):
-# 		for k in range(Nc):
-# 			for l in range(Nc):
-# 				print([i,j,k,l])
-# 				print(Routput[i,j,k,l])
-
 
 def M(hamiltonian_before, hamiltonian_after, Nc, dt):
 	evals_before, ekets_before = linalg.eigh(hamiltonian_before, 
 												eigvals = (0, Nc - 1))
 	evals_after, ekets_after = linalg.eigh(hamiltonian_after,
 												eigvals = (0, Nc - 1))
-	# print(sum([(ekets_after[i,0] + ekets_before[i,0])*\
-	# 			(ekets_after[i,1] - ekets_before[i,1]) for i in range(len(ekets_after[:,0]))]))
 	def bkt(i,j):
 		bra = ekets_after[:,i] + ekets_before[:,i]
 		ket = ekets_after[:,j] - ekets_before[:,j]
 		return sum(bra[:] * ket[:])/ (4 * dt)
 
-	# print(bkt(0,1))
 	def components(i,j,k,l):
 		return meta_functions.delta(i, k) * bkt(l, j) + meta_functions.delta(j, l) * bkt(k, i)
 
@@ -163,24 +123,6 @@ def M(hamiltonian_before, hamiltonian_after, Nc, dt):
 												for j in range(Nc)]
 												for i in range(Nc)])
 
-# Test of M().
-# s = 0.235
-# N = 6
-# I = 0.2
-# J = 0.3
-# K = 1.0
-# Nc = 5
-# H_before = meta_functions.generate_hamiltonian(s, [I, J, K, N])
-# H_after = meta_functions.generate_hamiltonian(s + 0.001, [I, J, K, N])
-# dt = 5 * 10**(-15)
-
-# Moutput = M(H_before, H_after, Nc, dt)
-# for i in range(Nc):
-# 	for j in range(Nc):
-# 		for k in range(Nc):
-# 			for l in range(Nc):
-# 				print([i,j,k,l])
-# 				print(Moutput[i,j,k,l])
 
 
 def generate_eq_dist(args):
@@ -197,17 +139,6 @@ def generate_eq_dist(args):
 
 	return eq_dist
 
-# tests generate_eq_
-# s = 0.235
-# N = 8
-# I = 0.2
-# J = 0.3
-# K = 1.0
-# Nc = 5
-# H_args = [I, J, K, N]
-# output = generate_eq_dist([s, Nc, H_args])
-
-# print(output)
 
 
 def generate_json(args):
@@ -224,8 +155,8 @@ def generate_json(args):
 
 
 	# provide name for generated JSON and check if JSON already exists.
-	prefix = '/data/tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence = '+ str(args)
-	simulation_filename = meta.ROOT + prefix + '.json'
+	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence = '+ str(args)
+	simulation_filename = meta.SAVE_LOCATION + prefix + '.json'
 	simulation = { 
 		'svals': svals,
 		'linblad_real_part': 0,
@@ -266,14 +197,11 @@ def generate_json(args):
 									)
 
 		# unpack components of the linblads into the JSON dict
-		# print("unpacking components of the linblads into the JSON dict...")
-		# start = time()
 		simulation['linblad_real_part'] = np.array(
 											[np.real(l) for l in linblads]).tolist()	
 		simulation['linblad_imaginary_part'] = np.array(
 											[np.imag(l) for l in linblads]).tolist()	
-		# end = time()
-		# print("finished downloading linblads into JSON in {} seconds.".format(end-start))
+
 
 		print("generating reference equilibrium distributions...")
 		eq_dist = pool.map(generate_eq_dist,
@@ -286,11 +214,12 @@ def generate_json(args):
 										)
 									)
 		simulation['eq_dist'] = np.array(eq_dist).tolist()
-		# end = time()
-		# print("finished downloading equilibium distributions into JSON in {} seconds.".format(end-start))
+
 	
+
 		# store the JSON dict in a JSON file
 		print("uploading data into the JSON file...")
+
 		start = time()
 		with open(simulation_filename, 'w') as file:
 			json.dump(simulation, file)
@@ -298,3 +227,60 @@ def generate_json(args):
 		print("Process complete. uploaded new JSON file in {} seconds.".format(end-start))
 
 
+# Test of M().
+# s = 0.235
+# N = 6
+# I = 0.2
+# J = 0.3
+# K = 1.0
+# Nc = 5
+# H_before = meta_functions.generate_hamiltonian(s, [I, J, K, N])
+# H_after = meta_functions.generate_hamiltonian(s + 0.001, [I, J, K, N])
+# dt = 5 * 10**(-15)
+
+# Moutput = M(H_before, H_after, Nc, dt)
+# for i in range(Nc):
+# 	for j in range(Nc):
+# 		for k in range(Nc):
+# 			for l in range(Nc):
+# 				print([i,j,k,l])
+# 				print(Moutput[i,j,k,l])
+
+
+# Test of R().
+# print("running...")
+# s = 0.524
+# N = 8
+# I = 0.3
+# J = 0.9
+# K = 1.4
+# Nc = 3
+# start = time()
+# hamiltonian_now = meta_functions.generate_hamiltonian(s, [I, J, K, N])
+# evals_now, ekets_now = linalg.eigh(hamiltonian_now)
+# end = time()
+# print("generated and diagonalized hamiltonian in {} seconds.".format(end-start))
+
+# start = time()
+# Routput = R(evals_now, ekets_now, s, N, Nc)
+# end = time()
+# print("R() ran in {} seconds.".format(end-start))
+
+# for i in range(Nc):
+# 	for j in range(Nc):
+# 		for k in range(Nc):
+# 			for l in range(Nc):
+# 				print([i,j,k,l])
+# 				print(Routput[i,j,k,l])
+
+# tests generate_eq_dist()
+# s = 0.235
+# N = 8
+# I = 0.2
+# J = 0.3
+# K = 1.0
+# Nc = 5
+# H_args = [I, J, K, N]
+# output = generate_eq_dist([s, Nc, H_args])
+
+# print(output)
