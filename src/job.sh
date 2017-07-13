@@ -1,5 +1,6 @@
 #!/bin/bash
-# My first script
+# Shell script for automating job schedules
+#----------------
 
 echo "Checking:"
 pwd
@@ -7,7 +8,9 @@ hostname
 date
 env | sort > ENVIRONMENT
 
-echo "Starting Redfield simulation of the D Wave 2X at LANL:" 
+echo "Starting Redfield simulation of the D Wave 2X:" 
+
+# Needed on certain supercomputing clusers:
 
 # module load anaconda
 
@@ -18,7 +21,7 @@ python generate.py 5E-6 .2 .23 1 5 4 10 0.001 20 10000 0
 
 # for D in 0
 # do
-# python linblad.py 5 .2 .23 4 $D
+# python solve.py 5 .2 .23 4 $D
 # done
 
 ENDTIME=$(date +%s)
