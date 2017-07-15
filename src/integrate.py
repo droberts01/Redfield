@@ -34,11 +34,11 @@ def master_eq_solve(initial_condition, L, tvals, Nc):
 											tvals[t + 1] - tvals[t])
 		
 		# Intermittently check that evolution is trace-preserving
-		if t%round((len(tvals)/20)) == 0:
-			print("time_index is {}".format(t))
-			print ("time_step is {}".format(tvals[t + 1] - tvals[t]))
-			print(np.transpose(rho[t - 1, np.newaxis]))
-			print("tr(rho[time_index]) is {}".format(sum([rho[t-1, (Nc + 1)*j]  for j in range(Nc)])))
+		# if t%round((len(tvals)/20)) == 0:
+		# 	print("time_index is {}".format(t))
+		# 	print ("time_step is {}".format(tvals[t + 1] - tvals[t]))
+		# 	print(np.transpose(rho[t - 1, np.newaxis]))
+		# 	print("tr(rho[time_index]) is {}".format(sum([rho[t-1, (Nc + 1)*j]  for j in range(Nc)])))
 
 
 	# Repackage density matrix back into a matrix
