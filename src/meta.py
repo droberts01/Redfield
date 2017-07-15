@@ -8,7 +8,7 @@ import numpy as np
 
 # Detect local directory
 ROOT = os.path.dirname(os.path.realpath(__file__))
-SAVE_LOCATION = '~/Dropbox/Dissipative Ferromagnets/Redfield_data/'
+SAVE_LOCATION = '/Users/Droberts/Documents/Dissipative/Redfield_data/'
 
 # Detect local parallelization resources
 CPU_COUNT = multiprocessing.cpu_count()
@@ -36,6 +36,8 @@ B = interp1d(ANNEALING_PARAMETER, PROBLEM_AMPLITUDE)
 BATH_COUPLING = 0.24
 BATH_CUTOFF_FREQ = 10**11
 
+# # Initial qubit state in QAA
+# INITIAL_STATE = 
 
 # Pauli matrices
 sigma_x = np.array([[0,1],[1,0]])

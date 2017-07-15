@@ -162,14 +162,14 @@ def generate_discretization(tQA, H_args, N_args_1):
 			if forward_step != backward_step:
 				bad_svals += [index]
 
-		bad_svals += [len(svals) - 1]
+	bad_svals += [len(svals) - 1]
 
-		# Remove duplicates
-		bad_svals = sorted(list(set(bad_svals)))
-		tvals = [tQA * s for s in svals]
-		# print([svals[b-1:b+2] for b in bad_svals[1:-1]])
+	# Remove duplicates
+	bad_svals = sorted(list(set(bad_svals)))
+	tvals = [tQA * s for s in svals]
+	# print([svals[b-1:b+2] for b in bad_svals[1:-1]])
 
-		# print(svals)
+	# print(svals)
 	return svals, bad_svals, tvals
 
 
@@ -191,6 +191,20 @@ def S(sval):
 		else:
 			return td_bath_coupling(sval) / meta.BETA
 	return S_func
+
+
+def superoperator(args):
+	rk4_tensor, Nc = args
+	def components(n, m):
+		i, j = divmod(n, Nc)
+		k, l = divmod(m, Nc)
+		return rk4_tensor[i, j, k, l]
+
+	# test = np.array([[components(n, m) for m in range(Nc**2)]
+	# 									for n in range(Nc**2)])
+	# print(test.shape)
+	return np.array([[components(n, m) for m in range(Nc**2)]
+										for n in range(Nc**2)])
 
 
 # Tests of generate_hamiltonian()

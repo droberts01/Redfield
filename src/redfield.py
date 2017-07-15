@@ -9,12 +9,13 @@ from scipy import linalg
 import multiprocessing
 import tqdm
 from time import time
-from functools import partial
 # from matplotlib import pyplot
 
 import meta
 import meta_functions
 
+
+# generate_linblad(999, )
 
 def generate_linblad(args):
 	index, svals, tvals, bad_svals, Nc, N, decoherence, H_args = args
@@ -51,7 +52,8 @@ def generate_linblad(args):
 			linblad = O(evals_now[:Nc], Nc) +\
 						M(hamiltonian_before, hamiltonian_after, Nc, dt) -\
 						R(evals_now, ekets_now, s_now, N, Nc)
-
+	# print(index)
+	# print(bad_svals)
 	return linblad
 
 
@@ -110,14 +112,66 @@ def M(hamiltonian_before, hamiltonian_after, Nc, dt):
 												eigvals = (0, Nc - 1))
 	evals_after, ekets_after = linalg.eigh(hamiltonian_after,
 												eigvals = (0, Nc - 1))
+	# evals_before, ekets_before = np.linalg.eigh(hamiltonian_before)
+	# evals_after, ekets_after = np.linalg.eigh(hamiltonian_after)
+
+	# psibefore00 = np.dot(ekets_before[:,0], ekets_before[:,0])
+	# psiafter00 = np.dot(ekets_after[:,0], ekets_after[:,0])
+	# psi01 = np.dot(ekets_before[:,0], ekets_after[:,0])
+	# psi10 = np.dot(ekets_after[:,0], ekets_before[:,0])
+
+	# print(psiafter00 - psibefore00 + psi01 - psi10)
+	# print("WHY IS THIS HAPPENING??!!")
+	# print(psiafter00)
+	# print(psibefore00)
+	# print(psiafter00 - psibefore00)
+
+
+	# print(" ")
+
+	# i, j = [0, 0]
+	# psip_i, psip_j = [ekets_after[:, i], ekets_after[:, j]]
+	# psim_i, psim_j = [ekets_before[:, i], ekets_before[:, j]]
+	# psi_pp = np.dot(psip_i, psip_j)
+	# psi_mm = np.dot(psim_i, psim_j)
+	# psi_mp = np.dot(psim_i, psip_j)
+	# psi_pm = np.dot(psip_i, psim_j)
+
+	# print(psiafter00 - psi_pp)
+	# print(psibefore00 - psi_mm)
+	# print(psi01 - psi_mp)
+	# print(psi10 - psi_pm)
+	# print("WOW")
+	# print(psiafter00 - psibefore00)
+
+	# print("here.")
+	# psiafter00 = np.dot(ekets_after[:,0], ekets_after[:,0])	# psiafter00
+	# psi_pp = np.dot(psip_i, psip_j)						# psi_pp
+	# print(psiafter00)
+	# print(psi_pp)
+	# print(psiafter00 - psi_pp)
+
 	def bkt(i,j):
-		bra = ekets_after[:,i] + ekets_before[:,i]
-		ket = ekets_after[:,j] - ekets_before[:,j]
-		return sum(bra[:] * ket[:])/ (4 * dt)
+		psip_i, psip_j = [ekets_after[:, i], ekets_after[:, j]]
+		psim_i, psim_j = [ekets_before[:, i], ekets_before[:, j]]
+		psi_pp = np.dot(psip_i, psip_j)
+		psi_mm = np.dot(psim_i, psim_j)
+		psi_mp = np.dot(psim_i, psip_j)
+		psi_pm = np.dot(psip_i, psim_j)
+		return (psi_pp - psi_mm + psi_mp - psi_pm)/(4 * dt)
+		# bra = ekets_after[:,i] + ekets_before[:,i]
+		# ket = ekets_after[:,j] - ekets_before[:,j]
+		# return sum(bra[:] * ket[:])/ (4 * dt)
+
+	# bra = ekets_after[:,0]+ekets_before[:,0]
+	# ket = ekets_after[:,0]-ekets_before[:,0]
+	# print(np.dot(bra,ket))
+	# print(bkt(0,0))
 
 	def components(i,j,k,l):
-		return meta_functions.delta(i, k) * bkt(l, j) + meta_functions.delta(j, l) * bkt(k, i)
-
+		# return meta_functions.delta(i, k) * bkt(l, j) + meta_functions.delta(j, l) * bkt(k, i)
+		return 0
+		
 	return np.array([[[[components(i,j,k,l) for l in range(Nc)] 
 												for k in range(Nc)]
 												for j in range(Nc)]
@@ -158,7 +212,7 @@ def generate_json(args):
 	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence = '+ str(args)
 	simulation_filename = meta.SAVE_LOCATION + prefix + '.json'
 	simulation = { 
-		'svals': svals,
+		'svals': svals.tolist(),
 		'linblad_real_part': 0,
 		'linblad_imaginary_part': 0,
 		'rho_real_part': 0,		
@@ -180,18 +234,19 @@ def generate_json(args):
 
 		# generate linblads in parallel
 		pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
-		iterable = np.arange(len(svals))
+		# iterable = np.arange(len(svals))
+		# print(svals)
 		linblads = pool.map(generate_linblad, 
 									tqdm.tqdm(
 										zip(
-											iterable, 
-											[svals]*len(iterable),
-											[tvals]*len(iterable), 
-											[bad_svals]*len(iterable), 
-											[int(Nc)]*len(iterable),
-											[int(N)]*len(iterable),
-											[int(decoherence)]*len(iterable),
-											[H_args]*len(iterable)
+											range(len(svals)), 
+											[svals]*len(svals),
+											[tvals]*len(svals), 
+											[bad_svals]*len(svals), 
+											[int(Nc)]*len(svals),
+											[int(N)]*len(svals),
+											[int(decoherence)]*len(svals),
+											[H_args]*len(svals)
 											)
 										)
 									)
@@ -201,6 +256,10 @@ def generate_json(args):
 											[np.real(l) for l in linblads]).tolist()	
 		simulation['linblad_imaginary_part'] = np.array(
 											[np.imag(l) for l in linblads]).tolist()	
+
+		# for k in range(int(Nc)):
+		# 	for l in range(int(Nc)):
+		# 		print(sum([linblads[200][j,j,k,l] for j in range(int(Nc))]))
 
 
 		print("generating reference equilibrium distributions...")
@@ -236,25 +295,29 @@ def generate_json(args):
 # Nc = 5
 # H_before = meta_functions.generate_hamiltonian(s, [I, J, K, N])
 # H_after = meta_functions.generate_hamiltonian(s + 0.001, [I, J, K, N])
-# dt = 5 * 10**(-15)
+# dt = 5 * 10**(-9)
 
 # Moutput = M(H_before, H_after, Nc, dt)
-# for i in range(Nc):
-# 	for j in range(Nc):
-# 		for k in range(Nc):
-# 			for l in range(Nc):
-# 				print([i,j,k,l])
-# 				print(Moutput[i,j,k,l])
+# # for i in range(Nc):
+# # 	for j in range(Nc):
+# # 		for k in range(Nc):
+# # 			for l in range(Nc):
+# # 				print([i,j,k,l])
+# # 				print(Moutput[i,j,k,l])
+# for k in range(Nc):
+# 	for l in range(Nc):
+# 		print([k,l])
+# 		print(sum([Moutput[j,j,k,l] for j in range(Nc)]))
 
 
-# Test of R().
+# # Test of R().
 # print("running...")
-# s = 0.524
-# N = 8
-# I = 0.3
-# J = 0.9
-# K = 1.4
-# Nc = 3
+# s = 0.235
+# N = 6
+# I = 0.2
+# J = 0.3
+# K = 1.0
+# Nc = 5
 # start = time()
 # hamiltonian_now = meta_functions.generate_hamiltonian(s, [I, J, K, N])
 # evals_now, ekets_now = linalg.eigh(hamiltonian_now)
@@ -266,12 +329,17 @@ def generate_json(args):
 # end = time()
 # print("R() ran in {} seconds.".format(end-start))
 
-# for i in range(Nc):
-# 	for j in range(Nc):
-# 		for k in range(Nc):
-# 			for l in range(Nc):
-# 				print([i,j,k,l])
-# 				print(Routput[i,j,k,l])
+# # for i in range(Nc):
+# # 	for j in range(Nc):
+# # 		for k in range(Nc):
+# # 			for l in range(Nc):
+# # 				print([i,j,k,l])
+# # 				print(Routput[i,j,k,l])
+# for k in range(Nc):
+# 	for l in range(Nc):
+# 		print([k,l])
+# 		print(sum([Routput[j,j,k,l] for j in range(Nc)]))
+
 
 # tests generate_eq_dist()
 # s = 0.235
