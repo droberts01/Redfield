@@ -9,18 +9,24 @@ import integrate
 import matplotlib.pyplot as plt 
 
 
+def foo(args):
+	x, y = args
+	x = float(x)
+	args = [x, y]
+	return x + y
 
+print(foo([1,2]))
 
-dt = 0.01
-tvals = np.arange(0, 1, dt)
-initial_condition = [1,1]
-k = -100
+# dt = 0.01
+# tvals = np.arange(0, 1, dt)
+# initial_condition = [1,1]
+# k = -100
 
-L_superoperator = [k * np.identity(2, dtype = complex)]*len(tvals)
-rho = integrate.master_eq_solve(initial_condition, L_superoperator, tvals)
+# L_superoperator = [k * np.identity(2, dtype = complex)]*len(tvals)
+# rho = integrate.master_eq_solve(initial_condition, L_superoperator, tvals)
 
-plt.plot(tvals, list(map(np.exp, k*tvals)), tvals[:-2], rho[:-2,0])
-plt.show()
+# plt.plot(tvals, list(map(np.exp, k*tvals)), tvals[:-2], rho[:-2,0])
+# plt.show()
 
 
 # for j in range(len(tvals)):

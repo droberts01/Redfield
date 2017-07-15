@@ -21,7 +21,8 @@ def update(rho_now, L_now, L_after, dt):
 	return np.matmul(A_after, np.matmul(A_now, rho_now))
 
 
-def master_eq_solve(initial_condition, L, tvals):
+
+def master_eq_solve(initial_condition, L, tvals, Nc):
 	N_steps = len(L)
 	# Initialize time-evolution as constant array
 	rho = np.array([initial_condition]*(N_steps), 
@@ -34,12 +35,19 @@ def master_eq_solve(initial_condition, L, tvals):
 		
 		# Intermittently check that evolution is trace-preserving
 		if t%round((len(tvals)/20)) == 0:
-			Nc = int(np.sqrt(len(initial_condition)))
 			print("time_index is {}".format(t))
 			print ("time_step is {}".format(tvals[t + 1] - tvals[t]))
 			print(np.transpose(rho[t - 1, np.newaxis]))
 			print("tr(rho[time_index]) is {}".format(sum([rho[t-1, (Nc + 1)*j]  for j in range(Nc)])))
 
+
+	# Repackage density matrix back into a matrix
+	rho = map(meta_functions.matrix,
+									zip(
+										rho, 
+										[Nc]*len(rho)
+										)
+									)
 	return rho
 
 
@@ -72,7 +80,7 @@ def solve_json(args):
 		print("Finished loading JSON. Initializing the quantum master equation with {} time steps...".format(len(svals)
 			))
 
-		initial_condition = np.array([1.]+[0.001]*(int(Nc**2-1)))
+		initial_condition = np.array([1.]+[0.]*(int(Nc**2-1)))
 		# print(initial_condition)
 
 		ReL = np.array(simulation['linblad_real_part'])
@@ -97,7 +105,8 @@ def solve_json(args):
 													)
 		# print(L[0])
 		# Bloch-Redfield master equation is solved here:
-		solution = master_eq_solve(initial_condition, L_superoperator, tvals)
+		solution = master_eq_solve(initial_condition, L_superoperator, tvals, 
+																		int(Nc))
 		# print(tvals)
 		# unpack components of the solution into the JSON dict
 		simulation['rho_real_part'] = np.array(

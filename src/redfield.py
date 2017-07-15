@@ -115,63 +115,16 @@ def M(hamiltonian_before, hamiltonian_after, Nc, dt):
 	# evals_before, ekets_before = np.linalg.eigh(hamiltonian_before)
 	# evals_after, ekets_after = np.linalg.eigh(hamiltonian_after)
 
-	# psibefore00 = np.dot(ekets_before[:,0], ekets_before[:,0])
-	# psiafter00 = np.dot(ekets_after[:,0], ekets_after[:,0])
-	# psi01 = np.dot(ekets_before[:,0], ekets_after[:,0])
-	# psi10 = np.dot(ekets_after[:,0], ekets_before[:,0])
-
-	# print(psiafter00 - psibefore00 + psi01 - psi10)
-	# print("WHY IS THIS HAPPENING??!!")
-	# print(psiafter00)
-	# print(psibefore00)
-	# print(psiafter00 - psibefore00)
-
-
-	# print(" ")
-
-	# i, j = [0, 0]
-	# psip_i, psip_j = [ekets_after[:, i], ekets_after[:, j]]
-	# psim_i, psim_j = [ekets_before[:, i], ekets_before[:, j]]
-	# psi_pp = np.dot(psip_i, psip_j)
-	# psi_mm = np.dot(psim_i, psim_j)
-	# psi_mp = np.dot(psim_i, psip_j)
-	# psi_pm = np.dot(psip_i, psim_j)
-
-	# print(psiafter00 - psi_pp)
-	# print(psibefore00 - psi_mm)
-	# print(psi01 - psi_mp)
-	# print(psi10 - psi_pm)
-	# print("WOW")
-	# print(psiafter00 - psibefore00)
-
-	# print("here.")
-	# psiafter00 = np.dot(ekets_after[:,0], ekets_after[:,0])	# psiafter00
-	# psi_pp = np.dot(psip_i, psip_j)						# psi_pp
-	# print(psiafter00)
-	# print(psi_pp)
-	# print(psiafter00 - psi_pp)
-
 	def bkt(i,j):
-		psip_i, psip_j = [ekets_after[:, i], ekets_after[:, j]]
-		psim_i, psim_j = [ekets_before[:, i], ekets_before[:, j]]
-		psi_pp = np.dot(psip_i, psip_j)
-		psi_mm = np.dot(psim_i, psim_j)
-		psi_mp = np.dot(psim_i, psip_j)
-		psi_pm = np.dot(psip_i, psim_j)
-		return (psi_pp - psi_mm + psi_mp - psi_pm)/(4 * dt)
-		# bra = ekets_after[:,i] + ekets_before[:,i]
-		# ket = ekets_after[:,j] - ekets_before[:,j]
-		# return sum(bra[:] * ket[:])/ (4 * dt)
+		bra = ekets_after[:,i] + ekets_before[:,i]
+		ket = ekets_after[:,j] - ekets_before[:,j]
+		return sum(bra[:] * ket[:])/ (4 * dt)
 
-	# bra = ekets_after[:,0]+ekets_before[:,0]
-	# ket = ekets_after[:,0]-ekets_before[:,0]
-	# print(np.dot(bra,ket))
-	# print(bkt(0,0))
 
 	def components(i,j,k,l):
-		# return meta_functions.delta(i, k) * bkt(l, j) + meta_functions.delta(j, l) * bkt(k, i)
-		return 0
-		
+		return meta_functions.delta(i, k) * bkt(l, j) + meta_functions.delta(j, l) * bkt(k, i)
+		# return 0
+
 	return np.array([[[[components(i,j,k,l) for l in range(Nc)] 
 												for k in range(Nc)]
 												for j in range(Nc)]

@@ -149,18 +149,19 @@ def generate_discretization(tQA, H_args, N_args_1):
 			if end_used:
 				svals = middle_svals + end_svals
 		
-		# Remove duplicates
-		svals = sorted(list(set(svals)))
+	# Remove duplicates
+	svals = sorted(list(set(svals)))
+	svals = np.array(svals)
 
-		# Store regions where the resolution in svals jumps sharply
-		# in bad_svals
-		for index in range(1,len(svals)-1):
-			forward_step = round(svals[index + 1] - svals[index], 
-													meta.STEP_PRECISION)
-			backward_step = round(svals[index] - svals[index - 1], 
-													meta.STEP_PRECISION)
-			if forward_step != backward_step:
-				bad_svals += [index]
+	# Store regions where the resolution in svals jumps sharply
+	# in bad_svals
+	for index in range(1,len(svals)-1):
+		forward_step = round(svals[index + 1] - svals[index], 
+												meta.STEP_PRECISION)
+		backward_step = round(svals[index] - svals[index - 1], 
+												meta.STEP_PRECISION)
+		if forward_step != backward_step:
+			bad_svals += [index]
 
 	bad_svals += [len(svals) - 1]
 
@@ -206,6 +207,15 @@ def superoperator(args):
 	return np.array([[components(n, m) for m in range(Nc**2)]
 										for n in range(Nc**2)])
 
+
+def matrix(args):
+	vector, Nc = args
+	def components(n, m):
+		i = n * Nc + m
+		return vector[i]
+
+	return np.array([[components(n, m) for m in range(Nc)]
+										for n in range(Nc)])
 
 # Tests of generate_hamiltonian()
 # print(generate_hamiltonian(.32, [.2, .3, 1, 5])[:4,:4])
