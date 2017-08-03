@@ -4,6 +4,9 @@
 import meta
 import numpy as np
 from bisect import bisect
+from scipy import linalg
+from functools import partial
+
 # import matplotlib.pyplot as plt
 
 # Kronecker delta
@@ -54,7 +57,8 @@ def Z(q, N):
 
 
 # Defines F-model Hamiltonian
-def generate_hamiltonian(sval, H_args):
+def generate_hamiltonian(args):
+	sval, H_args = args
 	I, J, K, N = H_args
 
 	def coupling(q):
@@ -120,6 +124,21 @@ def generate_discretization(tQA, H_args, N_args_1):
 		den = K**2 - J**2
 		r_b = (K/I) * num / den
 		min_gap = 0.05 * (r_b)**((N - 5.)/ 2.)
+
+
+		# Generate LZ probability
+		H_b = generate_hamiltonian([s_b, H_args])
+		evals_b, ekets_b = linalg.eigh(H_b, eigvals = (0, 3))
+		wmin = evals_b[3] - evals_b[0]
+		H_b1, H_b2 = [generate_hamiltonian([s_b - 5 * min_gap, H_args]),
+						generate_hamiltonian([s_b - 4 * min_gap, H_args])]
+		evals_b1, ekets_b1 = linalg.eigh(H_b1, eigvals = (0, 3))
+		evals_b2, ekets_b2 = linalg.eigh(H_b2, eigvals = (0, 3))
+		wdot = np.abs((evals_b1[3] - evals_b1[0]) - (evals_b2[3] - evals_b2[0]))\
+					/ min_gap
+		# LZ_arg = -np.pi * wmin**2 * tQA / (2 * wdot)
+		# LZ_probability = 1 - np.exp(LZ_arg)
+
 
 		# Sample points according to bottleneck size and location
 		middle_min = max(s_b - window_size * min_gap, 0)
@@ -207,6 +226,11 @@ def superoperator(args):
 	return np.array([[components(n, m) for m in range(Nc**2)]
 										for n in range(Nc**2)])
 
+def prod(iterable):
+    return reduce((lambda x, y: x*y), iterable)
+
+def diagonalization_func(Nc):
+	return partial(linalg.eigh, eigvals = (0, Nc - 1))
 
 def matrix(args):
 	vector, Nc = args

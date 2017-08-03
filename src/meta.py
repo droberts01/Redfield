@@ -29,8 +29,8 @@ DRIVER_AMPLITUDE *= 10**9
 PROBLEM_AMPLITUDE *= 10**9
 
 # Linearly interpolate driver and problem amplitudes
-A = interp1d(ANNEALING_PARAMETER, DRIVER_AMPLITUDE)
-B = interp1d(ANNEALING_PARAMETER, PROBLEM_AMPLITUDE)
+A = interp1d(ANNEALING_PARAMETER, DRIVER_AMPLITUDE, kind = 'linear')
+B = interp1d(ANNEALING_PARAMETER, PROBLEM_AMPLITUDE, kind = 'linear')
 
 # Time-Dependent (TD) noise strength in the D Wave 2X
 BATH_COUPLING = 0.24

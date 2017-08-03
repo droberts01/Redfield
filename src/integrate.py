@@ -53,7 +53,7 @@ def master_eq_solve(initial_condition, L, tvals, Nc):
 
 
 def solve_json(args):
-	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence = args
+	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, CPU = args
 	decoherence = int(decoherence)
 	# args for constructing F-model Hamiltonian
 	H_args = [I, J, K, int(N)]
@@ -64,9 +64,13 @@ def solve_json(args):
 				tQA, H_args, N_args[1])
 
 	# Check if JSON exists.
-	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence = '+ str(args)
-	simulation_filename = meta.SAVE_LOCATION + prefix + '.json'
-
+	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, CPU = '+ str(args)
+	
+	if CPU == "Darwin":
+		simulation_filename = prefix + '.json'
+	else:
+		simulation_filename = meta.SAVE_LOCATION + prefix + '.json'
+	
 	# Program runs here:
 	print("Testing to see if JSON exists...")
 	if not Path(simulation_filename).is_file():
@@ -80,7 +84,8 @@ def solve_json(args):
 		print("Finished loading JSON. Initializing the quantum master equation with {} time steps...".format(len(svals)
 			))
 
-		initial_condition = np.array([1.]+[0.]*(int(Nc**2-1)))
+		initial_condition = np.array([0.]*(int(Nc**2)))
+		initial_condition[int(Nc) + 1] = 1.
 		# print(initial_condition)
 
 		ReL = np.array(simulation['linblad_real_part'])

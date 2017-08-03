@@ -1,5 +1,20 @@
 #!/bin/bash
 # Shell script for automating job schedules
+#SBATCH --job-name=comp1
+#SBATCH --mail-user=youremail@gmail.com
+#SBATCH --mail-type=END
+#SBATCH --nodes=1 
+#SBATCH --exclusive 
+#SBATCH --time=1-00:00:00 
+#SBATCH --no-requeue 
+#SBATCH --output=out 
+#SBATCH --error=err 
+#SBATCH --mem 20000
+
+
+set -x                          # Output commands 
+set -e                          # Abort on errors 
+
 
 
 echo "Checking:"
@@ -22,19 +37,16 @@ STARTTIME=$(date +%s)
 # generate.py -tQA, -I, -J, -K, -N, -Nc, 
 #   			-step, -window_size, -num_samples, -decoherence
 # Generate a Bloch-Redfield master equation:
-for N in 9
-do
-	for J in .3
-	do 
-		python generate.py 5E-6 .2 $J 1 $N 4 0.001 10 10000 1 "Home"
+
+python generate.py 5E-6 .2 .24 1 7 4 0.001 10 1200 0 "Darwin"
 
 
 # solve.py -tQA, -I, -J, -K, -N, -Nc, 
 #   			-step, -window_size, -num_samples, -decoherence
 # Solve the Bloch-Redfield master equation (via 2nd order Implicit Runge-Kutta):
-		python solve.py 5E-6 .2 $J 1 $N 4 0.001 10 10000 1 "Home"
-	done
-done
+python solve.py 5E-6 .2 .24 1 7 4 0.001 10 1200 0 "Darwin"
+
+
 
 # for D in 0
 # do
