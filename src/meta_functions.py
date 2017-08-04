@@ -200,8 +200,8 @@ def td_bath_coupling(sval):
 	return scaling_factor * meta.BATH_COUPLING
 
 
-def S(sval):
-	def S_func(w):
+def S(sval, LF_noise):
+	def S_func_HF(w):
 		if abs(w) > meta.BATH_CUTOFF_FREQ:
 			return 0.0
 		elif w != 0:
@@ -210,7 +210,26 @@ def S(sval):
 			return num / den
 		else:
 			return td_bath_coupling(sval) / meta.BETA
+
+	def S_func_LF(w):
+		if abs(w) > meta.BATH_CUTOFF_FREQ:
+			return 0.0
+		elif w != 0:
+			num = meta.BETA * (meta.LF_BATH_COUPLING)**2 *\
+							 4 * (meta.PERSISTENT_CURRENT)**2
+			den = meta.HBAR**2 * (1 - np.exp(-meta.BETA * np.abs(w)))
+			return num / den
+		else:
+			return td_bath_coupling(sval) / meta.BETA
+
+	if not LF_noise:
+		def S_func(w):
+			return S_func_HF(w)
+	elif LF_noise:
+		def S_func(w):
+			return S_func_LF(w) + S_func_HF(w)
 	return S_func
+
 
 
 def superoperator(args):

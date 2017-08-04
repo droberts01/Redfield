@@ -19,7 +19,7 @@ import meta_functions
 # generate_linblad(999, )
 
 def generate_linblad(args):
-	index, svals, tvals, bad_svals, Nc, N, decoherence, evals, eket_3window = args
+	index, svals, tvals, bad_svals, Nc, N, decoherence, LF_noise, evals, eket_3window = args
 	s_now = svals[index]
 	t_now = tvals[index]
 	# print(index)
@@ -43,7 +43,7 @@ def generate_linblad(args):
 		if index in bad_svals:
 			evals_now, ekets_now = [evals, eket_3window]		
 			linblad = O(evals_now[:Nc], Nc) - R(evals_now, 
-											ekets_now, s_now, N, Nc)
+											ekets_now, s_now, N, Nc, LF_noise)
 		elif index not in bad_svals: 
 			s_before, s_after = [svals[index - 1], svals[index + 1]]
 			t_before, t_after = [tvals[index - 1], tvals[index + 1]]
@@ -56,7 +56,7 @@ def generate_linblad(args):
 			# print ekets_now
 			linblad = O(evals_now[:Nc], Nc) +\
 						M(ekets_before[:,:Nc], ekets_after[:,:Nc], Nc, dt) -\
-						R(evals_now, ekets_now, s_now, N, Nc)
+						R(evals_now, ekets_now, s_now, N, Nc, LF_noise)
 	# print(index)
 	# print(bad_svals)
 	return linblad
@@ -71,7 +71,7 @@ def O(evals, Nc):
 												for j in range(Nc)]
 												for i in range(Nc)])
 
-def R(evals, ekets, sval, N, Nc):
+def R(evals, ekets, sval, N, Nc, LF_noise):
 	unitary = ekets
 	# print (ekets[:,:10])
 	W = evals[:,np.newaxis] - evals[np.newaxis,:]
@@ -86,7 +86,7 @@ def R(evals, ekets, sval, N, Nc):
 	# print("computed matrix elements of Z in {} seconds.".format(end-start))
 
 	# Evaluate time-dependent noise spectral density
-	S = meta_functions.S(sval)
+	S = meta_functions.S(sval, LF_noise)
 
 	# Compute terms Gamma^+ and Gamma^- in the Redfield tensor
 	def gamma_plus(i,j,k,l):
@@ -204,8 +204,9 @@ def generate_frame(evals, ekets, Nc):
 
 
 def generate_json(args):
-	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, CPU = args
+	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, CPU = args
 	decoherence = int(decoherence)
+	LF_noise = int(LF_noise)
 	Nc = int(Nc)
 	# args for constructing F-model Hamiltonian
 	H_args = [I, J, K, int(N)]
@@ -218,7 +219,7 @@ def generate_json(args):
 
 
 	# provide name for generated JSON and check if JSON already exists.
-	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, CPU = '+ str(args)
+	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, CPU = '+ str(args)
 	if CPU == "Darwin":
 		simulation_filename = prefix + '.json'
 	else:
@@ -316,6 +317,7 @@ def generate_json(args):
 											[int(Nc)]*len(svals),
 											[int(N)]*len(svals),
 											[int(decoherence)]*len(svals),
+											[int(LF_noise)]*len(svals),
 											evals,
 											ekets_3windows
 											)

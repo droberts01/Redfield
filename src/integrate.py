@@ -53,8 +53,9 @@ def master_eq_solve(initial_condition, L, tvals, Nc):
 
 
 def solve_json(args):
-	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, CPU = args
+	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, CPU = args
 	decoherence = int(decoherence)
+	LF_noise = int(LF_noise)
 	# args for constructing F-model Hamiltonian
 	H_args = [I, J, K, int(N)]
 
@@ -64,7 +65,7 @@ def solve_json(args):
 				tQA, H_args, N_args[1])
 
 	# Check if JSON exists.
-	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, CPU = '+ str(args)
+	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, CPU = '+ str(args)
 	
 	if CPU == "Darwin":
 		simulation_filename = prefix + '.json'

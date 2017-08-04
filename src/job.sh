@@ -20,19 +20,19 @@ STARTTIME=$(date +%s)
 
 
 # generate.py -tQA, -I, -J, -K, -N, -Nc, 
-#   			-step, -window_size, -num_samples, -decoherence
+#   			-step, -window_size, -num_samples, -decoherence -LF_noise
 # Generate a Bloch-Redfield master equation:
-for N in 9
+for N in 5 7 9
 do
 	for J in .3
 	do 
-		python generate.py 5E-6 .2 $J 1 $N 4 0.001 10 10000 1 "Home"
+		python generate.py 5E-6 .2 $J 1 $N 4 0.001 10 10000 1 1 "Home"
 
 
 # solve.py -tQA, -I, -J, -K, -N, -Nc, 
-#   			-step, -window_size, -num_samples, -decoherence
+#   			-step, -window_size, -num_samples, -decoherence -LF_noise
 # Solve the Bloch-Redfield master equation (via 2nd order Implicit Runge-Kutta):
-		python solve.py 5E-6 .2 $J 1 $N 4 0.001 10 10000 1 "Home"
+		python solve.py 5E-6 .2 $J 1 $N 4 0.001 10 10000 1 1 "Home"
 	done
 done
 

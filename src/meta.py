@@ -19,6 +19,7 @@ T = 0.0155
 KB = 1.38065 *(10**(-23))
 HBAR = 1.0545718*(10**(-34))
 BETA = HBAR / (KB * T)
+UNIT_FLUX_QUANTUM = 2.067833831 *(10**(-15))
 
 ANNEALING_SCHEDULE = np.transpose(
 	np.loadtxt('data/DWaveAnnealingSchedule.csv', delimiter=','))
@@ -35,9 +36,9 @@ B = interp1d(ANNEALING_PARAMETER, PROBLEM_AMPLITUDE, kind = 'linear')
 # Time-Dependent (TD) noise strength in the D Wave 2X
 BATH_COUPLING = 0.24
 BATH_CUTOFF_FREQ = 10**11
+LF_BATH_COUPLING = 3 * 10**(-9) * UNIT_FLUX_QUANTUM
+PERSISTENT_CURRENT = 10**(-6)
 
-# # Initial qubit state in QAA
-# INITIAL_STATE = 
 
 # Pauli matrices
 sigma_x = np.array([[0,1],[1,0]])
