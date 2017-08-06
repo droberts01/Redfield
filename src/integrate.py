@@ -53,9 +53,11 @@ def master_eq_solve(initial_condition, L, tvals, Nc):
 
 
 def solve_json(args):
-	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, CPU = args
+	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, store_linblads, CPU = args
 	decoherence = int(decoherence)
 	LF_noise = int(LF_noise)
+	store_linblads = int(store_linblads)
+	Nc = int(Nc)
 	# args for constructing F-model Hamiltonian
 	H_args = [I, J, K, int(N)]
 
@@ -65,7 +67,7 @@ def solve_json(args):
 				tQA, H_args, N_args[1])
 
 	# Check if JSON exists.
-	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, CPU = '+ str(args)
+	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, store_linblads, CPU = '+ str(args)
 	
 	if CPU == "Darwin":
 		simulation_filename = prefix + '.json'
@@ -120,7 +122,10 @@ def solve_json(args):
 		simulation['rho_imaginary_part'] = np.array(
 											[np.imag(p) for p in solution]).tolist()	
 
-
+		if not store_linblads:
+			simulation['linblad_real_part'] = []
+			simulation['linblad_imaginary_part'] = []
+			
 
 		# put the dict back into the JSON file
 		print("uploading data into the JSON file...")

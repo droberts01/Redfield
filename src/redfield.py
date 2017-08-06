@@ -204,9 +204,10 @@ def generate_frame(evals, ekets, Nc):
 
 
 def generate_json(args):
-	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, CPU = args
+	tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, store_linblads, CPU = args
 	decoherence = int(decoherence)
 	LF_noise = int(LF_noise)
+	store_linblads = int(store_linblads)
 	Nc = int(Nc)
 	# args for constructing F-model Hamiltonian
 	H_args = [I, J, K, int(N)]
@@ -219,7 +220,7 @@ def generate_json(args):
 
 
 	# provide name for generated JSON and check if JSON already exists.
-	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, CPU = '+ str(args)
+	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, store_linblads, CPU = '+ str(args)
 	if CPU == "Darwin":
 		simulation_filename = prefix + '.json'
 	else:
