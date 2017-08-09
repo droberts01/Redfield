@@ -34,7 +34,7 @@ echo "Starting Redfield simulation of the D Wave 2X:"
 STARTTIME=$(date +%s)
 
 
-for N in 5 7 9
+for N in 6 8 10
 do
 	for J in .24 .28 .32 .36 .4 .44 .48
 	do 

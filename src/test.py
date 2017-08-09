@@ -11,6 +11,95 @@ import meta
 import meta_functions
 from functools import partial
 
+# -*- coding: utf-8 -*-
+import re
+import os
+import subprocess
+from subprocess import PIPE
+import time
+import numpy as np
+
+COUNTER = 0
+Nvals = [6]
+# Jvals = np.arange(.26, .3, .02)
+Jvals = [.39, .41, .43]
+PAUSE_TIME = 2
+
+
+for N in Nvals:
+	for J in Jvals:
+		sh_filename = 'job'+str(COUNTER)+'.sh'
+		with open(sh_filename, "w") as file:
+			file.write("#!/bin/bash\n")
+			file.write('\n')
+			file.write("# module load anaconda\n")
+			file.write('\n')
+			file.write("python generate.py 5E-6 .2 "+str(J)+" 1 "+str(N)+" 4 0.001 10 10000 1 1 0 'Home'\n")
+			file.write("python solve.py 5E-6 .2 "+str(J)+" 1 "+str(N)+" 4 0.001 10 10000 1 1 0 'Home'\n")
+			print(" writing shell script with settings (5E-6 .2 "+str(J)+" 1 "+str(N)+" 4 0.001 10 10000 1 1 0 'Home')")
+		
+		os.system('chmod -R 777 '+ sh_filename)
+
+
+		command = './' + sh_filename
+		print("executing {}".format(command))
+		os.system(command)
+
+
+		time.sleep(PAUSE_TIME)
+		COUNTER += 1
+		print('Finished submitting job. Starting a new job...')
+
+
+print("done.")
+
+
+# import re
+# import os
+# import subprocess
+# from subprocess import PIPE
+# import time
+# import numpy as np
+
+# COUNTER = 0
+# Nvals = [6, 8, 10]
+# Jvals = np.arange(.22, .5, .02)
+# PAUSE_TIME = 2
+
+# for N in Nvals:
+# 	for J in Jvals:
+# 		sh_filename = "job"+str(COUNTER)+".sh"
+# 		file = open(sh_filename, "w")
+
+# 		file.write("#!/bin/bash\n")
+# 		file.write("# Shell script for automating job schedules\n")
+# 		file.write("echo 'Checking:'\n")
+# 		file.write("pwd\n")
+# 		file.write("hostname\n")
+# 		file.write("date\n")
+# 		file.write("env | sort > ENVIRONMENT\n")
+# 		file.write("echo 'Starting Redfield simulation of the D Wave 2X:'\n")
+# 		file.write("# Needed on certain supercomputing clusers:\n")
+# 		file.write("# module load anaconda\n")
+# 		file.write("STARTTIME=$(date +%s)\n")
+# 		file.write("python generate.py 5E-6 .2 "+str(J)+" 1 "+str(N)+" 12 0.001 10 10000 1 1 0 'Home'\n")
+# 		file.write("python solve.py 5E-6 .2 "+str(J)+" 1 "+str(N)+" 12 0.001 10 10000 1 1 0 'Home'\n")
+# 		file.write("ENDTIME=$(date +%s)\n")
+# 		file.write("echo 'Stopping:'\n")
+# 		file.write("date\n")
+# 		file.write("echo 'Redfield simulation ran in $(($ENDTIME - $STARTTIME)) seconds.'\n")
+
+# 		print(" Running D Wave 2X simulations with settings (5E-6 .2 "+str(J)+" 1 "+str(N)+" 12 0.001 10 10000 1 1 0 'Home')")
+# 		print("executing command {}".format('./' + sh_filename))
+# 		# process = subprocess.Popen('./' + sh_filename, stdout = PIPE, stderr = PIPE)
+# 		process = subprocess.Popen('./job.sh', stdout = PIPE, stderr = PIPE)
+
+#  		time.sleep(PAUSE_TIME)
+ 		COUNTER += 1
+ 		stdout, stderr = process.communicate()
+ 		print('Finished submitting job. Starting a new job...')
+
+print("done.")
 
 # tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, CPU = [5*10**(-9), 0.2, 0.3, 1, 6, 6, 0.001, 10, 10000, 0, "Home"]
 # args = [tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, CPU]
