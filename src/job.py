@@ -29,7 +29,7 @@ for N in Nvals:
 			file.write("#SBATCH --no-requeue \n")
 			file.write("#SBATCH --output=out \n")
 			file.write("#SBATCH --error=err \n")
-			file.write("#SBATCH --mem 50000\n")
+			file.write("#SBATCH --mem 100000\n")
 			file.write("set -x                          # Output commands\n")
 			file.write("set -e                          # Abort on errors\n")
 
