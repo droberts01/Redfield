@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 COUNTER = 0
-Nvals = [6, 8, 10]
+Nvals = [10, 12, 14]
 Jvals = np.arange(.24, .5, .04)
 # Jvals = [.39, .41, .43]
 PAUSE_TIME = 2
@@ -17,7 +17,7 @@ for N in Nvals:
 	for J in Jvals:
 		sh_filename = 'darwin'+str(COUNTER)+'.sbatch'
 		with open(sh_filename, "w") as file:
-
+			mem = int(16000* 2**(N-9))
 			file.write("#!/bin/bash\n")
 			file.write("# Shell script for automating job schedules\n")
 			file.write("#SBATCH --job-name=comp1\n")
@@ -29,7 +29,7 @@ for N in Nvals:
 			file.write("#SBATCH --no-requeue \n")
 			file.write("#SBATCH --output=out \n")
 			file.write("#SBATCH --error=err \n")
-			file.write("#SBATCH --mem 100000\n")
+			file.write("#SBATCH --mem "+str(mem)+"\n")
 			file.write("set -x                          # Output commands\n")
 			file.write("set -e                          # Abort on errors\n")
 
@@ -46,8 +46,8 @@ for N in Nvals:
 
 			file.write("module load anaconda\n")
 			file.write('\n')
-			file.write("python generate.py 5E-6 .2 "+str(J)+" 1 "+str(N)+" 12 0.0002 10 10000 1 1 0 'Darwin'\n")
-			file.write("python solve.py 5E-6 .2 "+str(J)+" 1 "+str(N)+" 12 0.0002 10 10000 1 1 0 'Darwin'\n")
+			file.write("python generate.py 5E-6 .2 "+str(J)+" 1 "+str(N)+" 6 0.0002 10 10000 1 1 0 'Darwin'\n")
+			file.write("python solve.py 5E-6 .2 "+str(J)+" 1 "+str(N)+" 6 0.0002 10 10000 1 1 0 'Darwin'\n")
 		
 			file.write("ENDTIME=$(date +%s)")
 
@@ -59,7 +59,7 @@ for N in Nvals:
 
 			file.write("echo 'Redfield simulation ran in $(($ENDTIME - $STARTTIME)) seconds.'\n")
 		
-		print(" writing shell script with settings (5E-6 .2 "+str(J)+" 1 "+str(N)+" 12 0.0002 10 10000 1 1 0 'Darwin')")
+		print(" writing shell script with settings (5E-6 .2 "+str(J)+" 1 "+str(N)+" 6 0.0002 10 10000 1 1 0 'Darwin')")
 		os.system('chmod -R 777 '+ sh_filename)
 
 
