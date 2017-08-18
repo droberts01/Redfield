@@ -3,7 +3,7 @@ A portable time-dependent Redfield solver for high-performance simulations of QA
 
 Calculation of transition rates suggests that incoherent tunneling accelerates at bottlenecks of QAA, serving as a considerable computational resource. This Redfield solver facilitates a search for signatures of this hardware acceleration in the D Wave 2X adiabatic quantum computer at NASA Ames.
 
-## Running the Solver
+## Running D Wave 2X Simulations
 
 To run the Redfield solver, first run 
 
