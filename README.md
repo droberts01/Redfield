@@ -44,13 +44,22 @@ Finally, we have some Boolean options (True or False):
 
 And, the very last option:
 - save_location specifies where to save the file (if you are a new user, select "Home").
-   
-## Example
+
+Finally, once generate.py has run, run solve.py:
+
+    python solve.py tQA I J K N Nc step window_size num_samples include_low_freq_noise include_decoherence store_linblads save_location
+
+The options here have to be exactly the same as the ones used in the prior generate command, otherwise the terminal will throw an error.
+
+# Example
+
+Type
    
     python generate.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 1 1 0 'Home'
 
 to generate the Bloch-Redfield quantum master equation, then run
 
-    python solve.py
+
+    python generate.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 1 1 0 'Home'
 
 To solve this master equation.
