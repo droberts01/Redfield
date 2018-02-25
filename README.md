@@ -25,7 +25,7 @@ You'll want to change this to the save location of your choice. For example, on 
 
 To run the Redfield solver, first run 
 
-    python generate.py tQA I J K N Nc step window_size num_samples include_low_freq_noise include_decoherence store_linblads save_location
+    python generate.py tQA I J K N Nc step window_size num_samples include_low_freq_noise include_decoherence store_linblads save_location
     
 The options here are as follows:
 
