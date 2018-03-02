@@ -55,11 +55,11 @@ The options here have to be exactly the same as the ones used in the prior gener
 
 Type
    
-    python generate.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 0 1 0 'Home'
+    python generate.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 0 1 1 'Home'
 
 to generate the Bloch-Redfield quantum master equation, then run
 
 
-    python solve.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 0 1 0 'Home'
+    python solve.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 0 1 1 'Home'
 
 To solve this master equation.
