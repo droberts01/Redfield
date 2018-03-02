@@ -25,7 +25,7 @@ You'll want to change this to the save location of your choice. For example, on 
 
 To run the Redfield solver, first run 
 
-    python generate.py tQA I J K N Nc step window_size num_samples include_low_freq_noise include_decoherence store_linblads save_location
+    python generate.py tQA I J K N Nc step window_size num_samples include_decoherence include_low_freq_noise store_linblads save_location
     
 The options here are as follows:
 
@@ -47,7 +47,7 @@ And, the very last option:
 
 Finally, once generate.py has run, run solve.py:
 
-    python solve.py tQA I J K N Nc step window_size num_samples include_low_freq_noise include_decoherence store_linblads save_location
+    python solve.py tQA I J K N Nc step window_size num_samples include_decoherence include_low_freq_noise store_linblads save_location
 
 The options here have to be exactly the same as the ones used in the prior generate command, otherwise the terminal will throw an error.
 
@@ -55,11 +55,11 @@ The options here have to be exactly the same as the ones used in the prior gener
 
 Type
    
-    python generate.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 0 1 1 'Home'
+    python generate.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 1 0 1 'Home'
 
 to generate the Bloch-Redfield quantum master equation, then run
 
 
-    python solve.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 0 1 1 'Home'
+    python solve.py 5E-6 .2 0.24 1 7 6 0.001 10 1000 1 0 1 'Home'
 
 To solve this master equation.
