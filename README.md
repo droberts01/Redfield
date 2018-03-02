@@ -40,7 +40,7 @@ The options here are as follows:
 Finally, we have some Boolean options (True or False):
 - include_low_freq_noise specifies whether to include a 1/f component in the noise spectral density.
 - include_decoherence specifies whether to include the effects of the bath or to just simulate the coherent evolution (i.e. time-dependent closed-system dynamics)
-- store_linblads specifies whether to save the time-dependent linblad superoperator to the output file.
+- store_linblads specifies whether to erase the time-dependent linblad from the JSON file (after solving the ODE). This considerably reduces the size of the output file.
 
 And, the very last option:
 - save_location specifies where to save the file (if you are a new user, select "Home").
