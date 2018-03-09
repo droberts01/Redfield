@@ -199,6 +199,7 @@ def generate_frame(evals, ekets, Nc):
 		for j in range(Nc):
 			ekets[t][:,j] = holonomy[t, j] * ekets[t][:,j]
 
+	pool.close()
 	return evals, ekets
 
 
@@ -219,6 +220,7 @@ def generate_json(args):
 				tQA, H_args, N_args[1])
 
 
+
 	# provide name for generated JSON and check if JSON already exists.
 	prefix = 'tQA, I, J, K, N, Nc, step, window_size, num_samples, decoherence, LF_noise, store_linblads, CPU = '+ str(args)
 	if CPU == "Darwin":
@@ -228,11 +230,11 @@ def generate_json(args):
 	
 	simulation = { 
 		'svals': svals.tolist(),
-		'linblad_real_part': 0,
-		'linblad_imaginary_part': 0,
+		'linblad_real_part': [],
+		'linblad_imaginary_part': [],
 		'rho_real_part': 0,		
 		'rho_imaginary_part': 0,
-		'eq_dist': 0
+		'eq_dist': []
 	}
 
 
@@ -247,119 +249,152 @@ def generate_json(args):
 		print("Initializing the quantum master equation with {} time steps...".format(len(svals)
 			))
 
-		# generate linblads in parallel
-		pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
-		# iterable = np.arange(len(svals))
-		# print(svals)
-		print("storing Hamiltonians in RAM...")
-		hamiltonians = pool.map(meta_functions.generate_hamiltonian, 
-											tqdm.tqdm(
-												zip(
-													svals,
-													[H_args]*len(svals)
+		svals[-1] = 1
+		indices = range(len(svals))
+		partition = meta_functions.chunks(indices, meta.PARALLELISM)
+
+		for p in partition:
+
+			padded_p = [j for j in p]
+			if p[0] not in bad_svals:
+				padded_p.insert(0, p[0] - 1) 
+			if p[-1] not in bad_svals:
+				padded_p.insert(len(padded_p), p[-1] + 1)
+
+			print("Calculating Linblads from time step {} to time step {}".format(p[0],p[-1]))
+			# print("padded_p is {}".format(padded_p))
+
+			
+
+			# generate linblads in parallel
+			pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
+			# iterable = np.arange(len(svals))
+			# print(svals)
+			print("storing Hamiltonians in RAM...")
+			svals_p = [svals[j] for j in padded_p]
+			hamiltonians = pool.map(meta_functions.generate_hamiltonian, 
+												tqdm.tqdm(
+													zip(
+														svals_p,
+														[H_args]*len(padded_p)
+														)
 													)
 												)
-											)
+			pool.close()  
 
-		# H = hamiltonians[0]
-		# diagonalize = partial(linalg.eigh, eigvals = (0, Nc - 1))
-		# evals, ekets = diagonalize(H)
-		# print(evals[0])
-		# meta_functions.diagonalization_func(Nc)(hamiltonians[0])
+			# H = hamiltonians[0]
+			# diagonalize = partial(linalg.eigh, eigvals = (0, Nc - 1))
+			# evals, ekets = diagonalize(H)
+			# print(evals[0])
+			# meta_functions.diagonalization_func(Nc)(hamiltonians[0])
+			
+			# evals, ekets = \
+			# 	zip(map(meta_functions.diagonalization_func(Nc), 
+			# 					hamiltonians
+			# 				)
+			# 		)
+			print("extracting spectral data from Hamiltonians...")
+			# diagonalize = meta_functions.diagonalization_func(Nc)
+			
+			pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
+			data = \
+				pool.map(linalg.eigh, 
+								tqdm.tqdm(hamiltonians)
+							)
+			pool.close()  
+
+
+			evals = [d[0] for d in data]
+			ekets = [d[1] for d in data]
+			# print(len(ekets))
+
+			evals, ekets = generate_frame(evals, ekets, Nc)
+
+			#truncate evals. Padding of evals is no longer needed.
+			evals = [evals[j - padded_p[0]] for j in p]
+
+			ekets_3windows = []
+			for j in p:
+				if j in bad_svals:
+					ekets_3windows += [ekets[j - padded_p[0]]]
+				else:
+					ekets_3windows += [ekets[(j-1) - padded_p[0]:\
+												(j+2) - padded_p[0]
+											]
+										]
+
+				# ekets_3windows = [ekets[0]] +\
+				# [ekets[j-1:j+2] for j in range(1,len(ekets)-1)] +\
+				# 									[ekets[-1]]
+			# for index in range(len(ekets_3windows)):
+			# 	if index in bad_svals:
+			# 		ekets_3windows[index] = ekets[index]
+			# print ("ekets_3windows[280] is")
+			# print (ekets_3windows[280])
+			# print ("ekets_3windows[281] is")
+			# print (ekets_3windows[281])
+			# print ("ekets_3windows[282] is")
+			# print (ekets_3windows[282])
+
+			# print("ekets_3windows[0] is:")
+			# print(ekets_3windows[0])
+			# print("ekets_3windows[1] is:")
+			# print(ekets_3windows[1])
+			# print("we made it up to here.")
+
+
+			print("generating Linblads...")
+			pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
+			linblads = pool.map(generate_linblad, 
+										tqdm.tqdm(
+											zip(
+												p, 
+												[svals]*len(p),
+												[tvals]*len(p), 
+												[bad_svals]*len(p), 
+												[int(Nc)]*len(p),
+												[int(N)]*len(p),
+												[int(decoherence)]*len(p),
+												[int(LF_noise)]*len(p),
+												evals,
+												ekets_3windows
+												)
+											)
+										)
+			pool.close()  
+
+			# unpack components of the linblads into the JSON dict
+			simulation['linblad_real_part'] += [np.real(l) for l in linblads]	
+			simulation['linblad_imaginary_part'] += [np.imag(l) for l in linblads]	
+
+
+
+			# for k in range(int(Nc)):
+			# 	for l in range(int(Nc)):
+			# 		print(sum([linblads[200][j,j,k,l] for j in range(int(Nc))]))
+
+
+			print("generating reference equilibrium distributions...")
+			pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
+			eq_dist = pool.map(generate_eq_dist,
+										tqdm.tqdm(
+											zip(
+												svals,
+												[int(Nc)]*len(svals),
+												evals
+												)
+											)
+										)
+			simulation['eq_dist'] += eq_dist
+			pool.close()  
 		
-		# evals, ekets = \
-		# 	zip(map(meta_functions.diagonalization_func(Nc), 
-		# 					hamiltonians
-		# 				)
-		# 		)
-		print("extracting spectral data from Hamiltonians...")
-		# diagonalize = meta_functions.diagonalization_func(Nc)
-		data = \
-			pool.map(linalg.eigh, 
-							tqdm.tqdm(hamiltonians)
-						)
-		evals = [d[0] for d in data]
-		ekets = [d[1] for d in data]
-		# print(len(ekets))
-
-		evals, ekets = generate_frame(evals, ekets, Nc)
-
-		ekets_3windows = [ekets[0]] +\
-			[ekets[j-1:j+2] for j in range(1,len(ekets)-1)] +\
-												[ekets[-1]]
-
-		for index in range(len(ekets_3windows)):
-			if index in bad_svals:
-				ekets_3windows[index] = ekets[index]
-
-		pool.close()  
-		pool.join() 
-		# print ("ekets_3windows[280] is")
-		# print (ekets_3windows[280])
-		# print ("ekets_3windows[281] is")
-		# print (ekets_3windows[281])
-		# print ("ekets_3windows[282] is")
-		# print (ekets_3windows[282])
-
-		# print("ekets_3windows[0] is:")
-		# print(ekets_3windows[0])
-		# print("ekets_3windows[1] is:")
-		# print(ekets_3windows[1])
-		# print("we made it up to here.")
-
-
-		print("generating Linblads...")
-		pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
-		linblads = pool.map(generate_linblad, 
-									tqdm.tqdm(
-										zip(
-											range(len(svals)), 
-											[svals]*len(svals),
-											[tvals]*len(svals), 
-											[bad_svals]*len(svals), 
-											[int(Nc)]*len(svals),
-											[int(N)]*len(svals),
-											[int(decoherence)]*len(svals),
-											[int(LF_noise)]*len(svals),
-											evals,
-											ekets_3windows
-											)
-										)
-									)
-		pool.close()  
-		pool.join() 
-
-		# unpack components of the linblads into the JSON dict
-		simulation['linblad_real_part'] = np.array(
-											[np.real(l) for l in linblads]).tolist()	
-		simulation['linblad_imaginary_part'] = np.array(
-											[np.imag(l) for l in linblads]).tolist()	
-
-
-
-		# for k in range(int(Nc)):
-		# 	for l in range(int(Nc)):
-		# 		print(sum([linblads[200][j,j,k,l] for j in range(int(Nc))]))
-
-
-		print("generating reference equilibrium distributions...")
-		pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
-		eq_dist = pool.map(generate_eq_dist,
-									tqdm.tqdm(
-										zip(
-											svals,
-											[int(Nc)]*len(svals),
-											evals
-											)
-										)
-									)
-		simulation['eq_dist'] = np.array(eq_dist).tolist()
-
-	
 
 		# store the JSON dict in a JSON file
 		print("uploading data into the JSON file...")
 
+		simulation['eq_dist'] = np.array(simulation['eq_dist']).tolist()
+		simulation['linblad_real_part'] = np.array(simulation['linblad_real_part']).tolist()
+		simulation['linblad_imaginary_part'] = np.array(simulation['linblad_imaginary_part']).tolist()
 		start = time()
 		with open(simulation_filename, 'w') as file:
 			json.dump(simulation, file)

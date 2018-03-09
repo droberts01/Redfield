@@ -12,6 +12,7 @@ SAVE_LOCATION = '/Users/Droberts/Documents/Dissipative/Redfield_data/'
 
 # Detect local parallelization resources
 CPU_COUNT = multiprocessing.cpu_count()
+PARALLELISM = 50
 STEP_PRECISION = 5
 
 # Operating conditions in the D Wave 2X

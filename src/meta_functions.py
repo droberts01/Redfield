@@ -8,6 +8,9 @@ from scipy import linalg
 from functools import partial
 
 # import matplotlib.pyplot as plt
+def chunks(l, n):
+    n = max(1, n)
+    return [l[i:i+n] for i in xrange(0, len(l), n)]
 
 # Kronecker delta
 def delta(i, j):
