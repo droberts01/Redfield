@@ -292,7 +292,8 @@ def generate_json(args):
 			if index in bad_svals:
 				ekets_3windows[index] = ekets[index]
 
-
+		pool.close()  
+		pool.join() 
 		# print ("ekets_3windows[280] is")
 		# print (ekets_3windows[280])
 		# print ("ekets_3windows[281] is")
@@ -308,6 +309,7 @@ def generate_json(args):
 
 
 		print("generating Linblads...")
+		pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
 		linblads = pool.map(generate_linblad, 
 									tqdm.tqdm(
 										zip(
@@ -324,6 +326,8 @@ def generate_json(args):
 											)
 										)
 									)
+		pool.close()  
+		pool.join() 
 
 		# unpack components of the linblads into the JSON dict
 		simulation['linblad_real_part'] = np.array(
@@ -339,6 +343,7 @@ def generate_json(args):
 
 
 		print("generating reference equilibrium distributions...")
+		pool = multiprocessing.Pool(processes = meta.CPU_COUNT)
 		eq_dist = pool.map(generate_eq_dist,
 									tqdm.tqdm(
 										zip(
